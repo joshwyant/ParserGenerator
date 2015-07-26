@@ -18,6 +18,13 @@ namespace LR0Generator
         Assignment,
         AssignmentExpression,
         Compare,
+        TypeName,
+        TypeParameters,
+        TypeParameterList,
+        Call,
+        Parameters,
+        ParameterList,
+        AssignmentType,
         Term,
         Factor,
     }

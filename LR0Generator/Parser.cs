@@ -9,11 +9,12 @@ using static LR0Generator.Nonterminal;
 
 namespace LR0Generator
 {
-    class Parser
+    public class Parser
     {
-        Grammar Grammar { get; }
+        internal Grammar Grammar { get; }
         Lexer Lexer { get; }
         Stack<Tuple<AstNode, LR0ItemSet>> Stack { get; } = new Stack<Tuple<AstNode, LR0ItemSet>>();
+        public List<string> Errors { get; }  = new List<string>();
 
         public Parser(Grammar g, string s)
         {
@@ -51,7 +52,21 @@ namespace LR0Generator
                     // Reduce!
 
                     // Get the item we are supposed to reduce by in this state (marker is at the end).
-                    var item = currentState.Single(i => i.Length == i.Marker);
+                    var item = currentState.SingleOrDefault(i => i.Length == i.Marker);
+
+                    if (item == null)
+                    {
+                        Lexer.Read();
+
+                        var tokenStr = string.IsNullOrEmpty(t.Lexeme) ? t.Terminal.ToString() : t.Lexeme;
+
+                        Errors.Add($"Unexpected symbol: {tokenStr}");
+
+                        if (t.Terminal == Terminal.Eof)
+                            didReduceByAccepting = true;
+
+                        continue;
+                    }
 
                     // What production are we reducing to?
                     var reduceLhs = item.Rule.Production.Lhs;

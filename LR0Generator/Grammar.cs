@@ -228,6 +228,7 @@ namespace LR0Generator
                                 Transitions.Add(transitionKey, _goto);
                                 changed = true;
                             }
+
                         }
                     }
                 }
@@ -242,6 +243,40 @@ namespace LR0Generator
                 }
 
             } while (changed);
+        }
+
+        public LR0ItemSet[] ReduceReduceConflicts()
+        {
+            return States
+                .Where(rs => rs.Count(s => s.Length == s.Marker) > 1)
+                .Select(rs => new LR0ItemSet(rs.Where(s => s.Length == s.Marker || !s.IsKernel)))
+                .Distinct()
+                .ToArray();
+        }
+
+        public Tuple<LR0Item, Symbol>[] ShiftReduceConflicts()
+        {
+            var toReturn = new List<Tuple<LR0Item, Symbol>>();
+            foreach (var s in States)
+            {
+                foreach (var i in s)
+                {
+                    if (i.Length == i.Marker
+                        && !i.Rule.Production.Rules.Any(r => r.IsAccepting))
+                    {
+                        foreach (var sym in Follow[i.Rule.Production.Lhs])
+                        {
+                            var transitionKey = new Tuple<LR0ItemSet, Symbol>(s, sym);
+                            if (Transitions.ContainsKey(new Tuple<LR0ItemSet, Symbol>(s, sym)))
+                            {
+                                toReturn.Add(new Tuple<LR0Item, Symbol>(i, sym));
+                            }
+                        }
+                    }
+                }
+            }
+            return toReturn.Distinct().ToArray();
+            
         }
     }
 }

@@ -26,7 +26,8 @@ namespace LR0Generator
         Dictionary<string, Terminal> ReservedWords { get; } 
             = new Dictionary<string, Terminal>
         {
-            { "if", If }, { "for", For }, { "var", Var }
+            { "if", If }, { "for", For }, { "var", Var }, { "int", Int }, { "float", Float },
+            { "bool", Bool }, { "string", Terminal.String }
         };
 
         Token peekToken;
@@ -117,6 +118,7 @@ namespace LR0Generator
                         case '(': yield return new Token(LeftParen, cc); break;
                         case ')': yield return new Token(RightParen, cc); break;
                         case ';': yield return new Token(Semicolon, cc); break;
+                        case ',': yield return new Token(Comma, cc); break;
                         case '=': yield return new Token(Terminal.Equals, cc); break;
                         case '{': yield return new Token(LeftBrace, cc); break;
                         case '}': yield return new Token(RightBrace, cc); break;

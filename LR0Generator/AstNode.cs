@@ -39,8 +39,13 @@ namespace LR0Generator
             }
             else
             {
-                foreach (var c in Children)
+                for (var i = 0; i < Children.Length; i++)
+                {
+                    var c = Children[i];
+                    if (i != 0)
+                        w.Write(" ");
                     c.Print(w);
+                }
             }
         }
     }
