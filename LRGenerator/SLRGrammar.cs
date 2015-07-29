@@ -3,42 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LR0Generator.Terminal;
-using static LR0Generator.Nonterminal;
+using static LRGenerator.Terminal;
+using static LRGenerator.Nonterminal;
 
-namespace LR0Generator
+namespace LRGenerator
 {
-    public abstract class Grammar
+    public class SLRGrammar : Grammar
     {
-        public Dictionary<Nonterminal, Production> Productions { get; } = new Dictionary<Nonterminal, Production>();
-        public LR0ItemSet StartState { get; private set; }
-        public Dictionary<Tuple<LR0ItemSet, Symbol>, LR0ItemSet> Transitions { get; } = new Dictionary<Tuple<LR0ItemSet, Symbol>, LR0ItemSet>();
-        Dictionary<Symbol, HashSet<Terminal>> First { get; set; }
-        Dictionary<Symbol, HashSet<Terminal>> Follow { get; set; }
-        Dictionary<Symbol, bool> Nullable { get; set; }
-        Symbol[] Symbols { get; set; }
-        public LR0ItemSetCollection States { get; set; }
-        
-        public Production DefineProduction(Nonterminal Lhs)
-        {
-            Production p;
-
-            if (!Productions.TryGetValue(Lhs, out p))
-            {
-                p = new Production(Lhs);
-                Productions.Add(Lhs, p);
-            }
-
-            return p;
-        }
-        
-        public void GenerateTables()
-        {
-            ComputeFirstAndFollows();
-            ComputeItemSetCollection();
-        }
-
-        private void ComputeFirstAndFollows()
+        protected override void ComputeFirstAndFollows()
         {
             // Get terminals and nonterminals from enumerations
             var terminals = (Terminal[])Enum.GetValues(typeof(Terminal));
@@ -128,7 +100,7 @@ namespace LR0Generator
             } while (changed);
         }
 
-        private LR0ItemSet Closure(LR0ItemSet items)
+        protected override LR0ItemSet Closure(LR0ItemSet items)
         {
             // Initialize the return set to the item set
             LR0ItemSet newset = new LR0ItemSet(items);
@@ -167,7 +139,7 @@ namespace LR0Generator
             return newset;
         }
 
-        private LR0ItemSet Goto(LR0ItemSet items, Symbol s)
+        protected override LR0ItemSet Goto(LR0ItemSet items, Symbol s)
         {
             // Start with an empty set.
             var newset = new LR0ItemSet(new LR0Item[] { });
@@ -185,7 +157,7 @@ namespace LR0Generator
             return Closure(newset);
         } 
 
-        private void ComputeItemSetCollection()
+        protected override void ComputeItemSetCollection()
         {
             // Here's our big collection of item sets
             States = new LR0ItemSetCollection();
@@ -243,40 +215,6 @@ namespace LR0Generator
                 }
 
             } while (changed);
-        }
-
-        public LR0ItemSet[] ReduceReduceConflicts()
-        {
-            return States
-                .Where(rs => rs.Count(s => s.Length == s.Marker) > 1)
-                .Select(rs => new LR0ItemSet(rs.Where(s => s.Length == s.Marker || !s.IsKernel)))
-                .Distinct()
-                .ToArray();
-        }
-
-        public Tuple<LR0Item, Symbol>[] ShiftReduceConflicts()
-        {
-            var toReturn = new List<Tuple<LR0Item, Symbol>>();
-            foreach (var s in States)
-            {
-                foreach (var i in s)
-                {
-                    if (i.Length == i.Marker
-                        && !i.Rule.Production.Rules.Any(r => r.IsAccepting))
-                    {
-                        foreach (var sym in Follow[i.Rule.Production.Lhs])
-                        {
-                            var transitionKey = new Tuple<LR0ItemSet, Symbol>(s, sym);
-                            if (Transitions.ContainsKey(new Tuple<LR0ItemSet, Symbol>(s, sym)))
-                            {
-                                toReturn.Add(new Tuple<LR0Item, Symbol>(i, sym));
-                            }
-                        }
-                    }
-                }
-            }
-            return toReturn.Distinct().ToArray();
-            
         }
     }
 }

@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LR0Generator.Terminal;
+using static LRGenerator.Terminal;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     public class Lexer
     {

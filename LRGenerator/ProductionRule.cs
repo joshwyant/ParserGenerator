@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     public class ProductionRule
     {
@@ -45,7 +45,7 @@ namespace LR0Generator
             {
                 hash = 17;
                 hash = hash * 23 + Production.Lhs.GetHashCode();
-                foreach (var sym in Symbols.OrderBy(s => s.GetHashCode()))
+                foreach (var sym in Symbols)
                     hash = hash * 23 + sym.GetHashCode();
             }
         }

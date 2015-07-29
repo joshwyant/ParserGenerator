@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     public class AstNode
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{34637FE2-115A-4977-92FD-59455D56190E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LR0Generator</RootNamespace>
-    <AssemblyName>LR0Generator</AssemblyName>
+    <RootNamespace>LRGenerator</RootNamespace>
+    <AssemblyName>LRGenerator</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>LR0Generator.Program</StartupObject>
+    <StartupObject>LRGenerator.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstNode.cs" />
+    <Compile Include="SLRGrammar.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="LR0ItemSet.cs" />
     <Compile Include="LR0Item.cs" />

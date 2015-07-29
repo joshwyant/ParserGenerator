@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LR0Generator.Terminal;
-using static LR0Generator.Nonterminal;
+using static LRGenerator.Terminal;
+using static LRGenerator.Nonterminal;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     class Program
     {
@@ -97,7 +97,7 @@ namespace LR0Generator
         }
     }
 
-    public class MyGrammar : Grammar
+    public class MyGrammar : SLRGrammar
     {
         public MyGrammar()
         {
@@ -176,7 +176,7 @@ namespace LR0Generator
         }
     }
 
-    public class MyBrokenGrammar : Grammar
+    public class MyBrokenGrammar : SLRGrammar
     {
         public MyBrokenGrammar()
         {

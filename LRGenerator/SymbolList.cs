@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     internal class SymbolList : List<Symbol>
     {

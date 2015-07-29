@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LR0Generator.Terminal;
-using static LR0Generator.Nonterminal;
+using static LRGenerator.Terminal;
+using static LRGenerator.Nonterminal;
 
-namespace LR0Generator
+namespace LRGenerator
 {
     public class Parser
     {
