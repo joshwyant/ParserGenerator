@@ -44,15 +44,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action.cs" />
+    <Compile Include="ActionType.cs" />
     <Compile Include="AstNode.cs" />
+    <Compile Include="LALRGrammar.cs" />
+    <Compile Include="LRkParseTable.cs" />
+    <Compile Include="LRParsingTable.cs" />
     <Compile Include="SLRGrammar.cs" />
-    <Compile Include="Grammar.cs" />
-    <Compile Include="LR0ItemSet.cs" />
-    <Compile Include="LR0Item.cs" />
-    <Compile Include="LR0ItemSetCollection.cs" />
+    <Compile Include="LRkGrammar.cs" />
+    <Compile Include="LRItemSet.cs" />
+    <Compile Include="LRItem.cs" />
+    <Compile Include="LRItemSetCollection.cs" />
     <Compile Include="Nonterminal.cs" />
     <Compile Include="Lexer.cs" />
-    <Compile Include="Parser.cs" />
+    <Compile Include="LRkParser.cs" />
     <Compile Include="ProductionRule.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="Program.cs" />

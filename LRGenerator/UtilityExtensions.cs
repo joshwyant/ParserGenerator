@@ -35,5 +35,15 @@ namespace LRGenerator
                 array[i] = enumerator.Current;
             }
         }
+
+        public static IEnumerable<T> Yield<T>(this T item)
+        {
+            yield return item;
+        }
+
+        public static void Each<T>(this IEnumerable<T> e, Action<T> a)
+        {
+            foreach (var i in e) a(i);
+        }
     }
 }

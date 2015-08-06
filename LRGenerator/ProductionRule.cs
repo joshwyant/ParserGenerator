@@ -12,6 +12,7 @@ namespace LRGenerator
         public IReadOnlyList<Symbol> Symbols { get; }
         public int Length { get { return Symbols.Count; } }
         public bool IsAccepting { get; set; }
+        public int Index { get; set; }
 
         internal ProductionRule(Production p, IEnumerable<Symbol> startingSymbols)
         {

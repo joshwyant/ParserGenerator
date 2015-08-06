@@ -6,18 +6,26 @@ using System.Threading.Tasks;
 
 namespace LRGenerator
 {
-    public class LR0Item
+    public class LRItem
     {
         public ProductionRule Rule { get; }
         public int Marker { get; }
         public bool IsKernel { get; }
         public int Length { get { return Rule.Length; } }
+        public HashSet<Terminal> Lookaheads { get; }
 
-        public LR0Item(ProductionRule rule, int marker, bool? isKernel = null)
+        public LRItem(ProductionRule rule, int marker, bool? isKernel = null)
         {
             Rule = rule;
             Marker = marker;
             IsKernel = isKernel ?? marker != 0;
+            Lookaheads = new HashSet<Terminal>();
+        }
+
+        public LRItem(ProductionRule rule, int marker, HashSet<Terminal> lookaheads, bool? isKernel = null)
+            : this(rule, marker, isKernel)
+        {
+            Lookaheads = lookaheads;
         }
 
         int? hash;
@@ -34,7 +42,7 @@ namespace LRGenerator
 
         public override bool Equals(object obj)
         {
-            var t = obj as LR0Item;
+            var t = obj as LRItem;
 
             if (t == null)
                 return false;
@@ -58,6 +66,12 @@ namespace LRGenerator
 
             if (Marker >= Length)
                 sb.Append(" *");
+
+            if (Lookaheads.Count > 0)
+            {
+                var lookaheads = string.Join(", ", Lookaheads);
+                sb.Append($"({lookaheads})");
+            }
 
             return $"{Rule.Production} ->{sb}";
         }

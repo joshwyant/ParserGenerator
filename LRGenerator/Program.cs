@@ -21,7 +21,7 @@ namespace LRGenerator
             Console.ReadKey(true);
         }
 
-        private static void Demo(Grammar grammar, string toParse)
+        private static void Demo(SLRGrammar grammar, string toParse)
         {
             Console.WriteLine($"{grammar.GetType().Name}:");
             Console.WriteLine();
@@ -34,7 +34,7 @@ namespace LRGenerator
             {
                 while (!string.IsNullOrEmpty(toParse))
                 {
-                    var p = new Parser(grammar, toParse);
+                    var p = new LRkParser(grammar, toParse);
                     var ast = p.ParseAst();
 
                     if (p.Errors.Count > 0)
@@ -171,8 +171,6 @@ namespace LRGenerator
                     % Ident;
             t = factor
                     % Number;
-
-            GenerateTables();
         }
     }
 
@@ -293,8 +291,6 @@ namespace LRGenerator
             t = factor
                     % Number;
             t = factor % Call;
-
-            GenerateTables();
         }
     }
 }

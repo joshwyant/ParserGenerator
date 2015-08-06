@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace LRGenerator
 {
-    public class LR0ItemSetCollection : List<LR0ItemSet>
+    public enum ActionType
     {
+        Shift,
+        Reduce,
+        Error,
+        Accept
     }
 }
