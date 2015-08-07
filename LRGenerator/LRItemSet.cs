@@ -19,6 +19,7 @@ namespace LRGenerator
         public void RemoveNonkernels()
         {
             RemoveWhere(i => !i.IsKernel);
+            TrimExcess(); // The whole point of removing the nonkernels is to save memory.
         }
 
         int? hash;
