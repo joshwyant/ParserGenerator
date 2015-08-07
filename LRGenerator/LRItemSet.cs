@@ -45,7 +45,7 @@ namespace LRGenerator
             
             return t != null && 
                 (ReferenceEquals(this, obj)
-                || Kernels.SetEquals(t.Kernels);
+                || Kernels.Count() == Enumerable.Intersect(Kernels, t.Kernels).Count());
         }
 
         

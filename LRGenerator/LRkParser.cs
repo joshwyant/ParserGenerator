@@ -40,7 +40,7 @@ namespace LRGenerator
             foreach (var t in Tokens)
             {
                 // Reduce any number of times for a given token. Always advance to the next token for no reduction.
-                var reduced;
+                bool reduced;
                 do {
                     reduced = false;
                 
@@ -102,6 +102,7 @@ namespace LRGenerator
                     }
                 } while (reduced);
             }
+            return null;
         }
 
         //private static Func<LRkParser, AstNode> CompileParser(LRkParseTable table)
