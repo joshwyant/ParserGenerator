@@ -14,18 +14,12 @@ namespace LRGenerator
         public int Length { get { return Rule.Length; } }
         public HashSet<Terminal> Lookaheads { get; }
 
-        public LRItem(ProductionRule rule, int marker, bool? isKernel = null)
+        public LRItem(ProductionRule rule, int marker, IEnumerable<Terminal> lookaheads = null, bool? isKernel = null)
         {
             Rule = rule;
             Marker = marker;
             IsKernel = isKernel ?? marker != 0;
-            Lookaheads = new HashSet<Terminal>();
-        }
-
-        public LRItem(ProductionRule rule, int marker, HashSet<Terminal> lookaheads, bool? isKernel = null)
-            : this(rule, marker, isKernel)
-        {
-            Lookaheads = lookaheads;
+            Lookaheads = new HashSet<Terminal>(lookaheads ?? Enumerable.Empty<Terminal>());
         }
 
         int? hash;

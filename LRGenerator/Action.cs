@@ -21,5 +21,18 @@ namespace LRGenerator
         {
             Type = type;
         }
+
+        public override string ToString()
+        {
+            switch (Type)
+            {
+                case ActionType.Shift:
+                    return $"s{Number}";
+                case ActionType.Reduce:
+                    return $"r{Number}";
+                default:
+                    return Type.ToString();
+            }
+        }
     }
 }

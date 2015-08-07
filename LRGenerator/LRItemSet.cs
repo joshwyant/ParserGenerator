@@ -44,24 +44,37 @@ namespace LRGenerator
             
             return t != null && 
                 (ReferenceEquals(this, obj)
-                || (Index != -1 && Index == t.Index) // probably not used
-                || Kernels.Count() == Enumerable.Union(Kernels, t.Kernels).Count());
+                || Kernels.Count() == Enumerable.Intersect(Kernels, t.Kernels).Count());
         }
 
         
-        public void Merge(LRItemSet set)
+        public bool Merge(IEnumerable<LRItem> set)
         {
-            if (!Equals(set))
-                throw new InvalidOperationException();
+            //if (!Equals(set))
+            //    throw new InvalidOperationException();
+
+            var added = false;
 
             var mylookup = this.ToDictionary(i => i, i => i);
 
             foreach (var item in set)
             {
-                var myItem = mylookup[item];
-
-                myItem.Lookaheads.UnionWith(item.Lookaheads);
+                LRItem myItem = null;
+                if (mylookup.TryGetValue(item, out myItem))
+                {
+                    if (myItem.Lookaheads.TryUnionWith(item.Lookaheads))
+                        added = true;
+                }
+                else
+                {
+                    myItem = new LRItem(item.Rule, item.Marker, item.Lookaheads, item.IsKernel);
+                    mylookup[myItem] = myItem;
+                    this.Add(myItem);
+                    added = true;
+                }
             }
+
+            return added;
         }
         
     }

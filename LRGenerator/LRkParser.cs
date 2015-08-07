@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static LRGenerator.Terminal;
-using static LRGenerator.Nonterminal;
 using static LRGenerator.ActionType;
+using System.Linq.Expressions;
 
 namespace LRGenerator
 {
@@ -29,7 +29,7 @@ namespace LRGenerator
             var currentState = table.StartState;
 
             // Push the start state onto the stack
-            Stack.Push(new Tuple<AstNode, int>(new AstNode(Start), currentState));
+            Stack.Push(new Tuple<AstNode, int>(new AstNode(Nonterminal.Start), currentState));
 
             var t = Lexer.Read();
             
@@ -58,9 +58,7 @@ namespace LRGenerator
 
                         // Pop the thing off the stack
                         for (var i = rule.Length - 1; i >= 0; i--)
-                        {
                             symbols[i] = Stack.Pop().Item1;
-                        }
 
                         // Create a new Ast node
                         var reducedNode = new AstNode(reduceLhs, symbols);
@@ -95,5 +93,33 @@ namespace LRGenerator
                 }
             }
         }
+
+        //private static Func<LRkParser, AstNode> CompileParser(LRkParseTable table)
+        //{
+        //    var parserParam = Expression.Parameter(typeof(LRkParser), "parser");
+        //    var stack = Expression.Property(parserParam, "Stack");
+        //    var stackPush = Expression.Call(stack, typeof(Stack<Tuple<AstNode, int>>).GetMethod("Push"));
+        //    var newStackObj = Expression.New(typeof(Tuple<AstNode, int>).GetConstructors().Single(c => c.GetParameters().Count() == 2));
+        //    var newAstNode = Expression.New(typeof(AstNode));
+        //    var parserGrammar = Expression.Property(parserParam, "Grammar");
+        //    var parserLexer = Expression.Property(parserParam, "Lexer");
+        //    var lexerRead = Expression.Call(parserLexer, typeof(Lexer).GetMethod("Read"));
+        //    var currentState = Expression.Variable(typeof(int));
+        //    var currentToken = Expression.Variable(typeof(Token));
+
+        //    var program = Expression.Block(
+        //        Expression.Assign(currentState, Expression.Constant(table.StartState)),
+        //        Expression.Assign(currentToken, lexerRead),
+        //        Expression.Loop(
+        //            Expression.Switch(
+        //                currentState,
+        //                new[]
+        //                {
+        //                    Expression.
+        //                }
+        //            )
+        //        )
+        //    );
+        //}
     }
 }

@@ -1,182 +1,275 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using static LRGenerator.Terminal;
-//using static LRGenerator.Nonterminal;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static LRGenerator.Terminal;
+using static LRGenerator.Nonterminal;
+using static LRGenerator.ActionType;
 
-//namespace LRGenerator
-//{
-//    public class LALRGrammar : LRkGrammar
-//    {
-//        protected LRItemSet Closure(LRItemSet items)
-//        {
-//            // Initialize the return set to the item set
-//            LRItemSet newset = new LRItemSet(items);
+namespace LRGenerator
+{
+    public class LALRGrammar : LRkGrammar
+    {
+        public LALRGrammar()
+            : base()
+        {
 
-//            // Keep looping until no more items were added in this iteration
-//            bool changed;
-//            do
-//            {
-//                changed = false;
-//                var toAdd = new HashSet<LRItem>();
-//                // For each item in the set
-//                foreach (var item in newset)
-//                {
-//                    if (item.Marker < item.Length)
-//                    {
-//                        var nextSymbol = item.Rule.Symbols[item.Marker];
-//                        if (!nextSymbol.IsTerminal)
-//                        {
-//                            var hashset = new HashSet<Terminal>();
+        }
 
-//                            foreach (var lookahead in item.Lookaheads)
-//                            {
-//                                // For each rule of the production past the marker for this item
-//                                foreach (var rule in Productions[nextSymbol.Nonterminal].Rules)
-//                                {
-//                                    var followingSymbols = item.Rule.Symbols.Skip(item.Marker + 1);
+        protected LRItemSet LR1Closure(LRItemSet items)
+        {
+            // Initialize the return set to the item set
+            LRItemSet newset = new LRItemSet(items);
 
-//                                    hashset.UnionWith(FirstOfSet(followingSymbols, lookahead));
+            // Keep looping until no more items were added in this iteration
+            bool changed;
+            do
+            {
+                changed = false;
+                var toAdd = new List<LRItem>();
+                // For each item in the set
+                foreach (var item in newset)
+                {
+                    if (item.Marker < item.Length)
+                    {
+                        var nextSymbol = item.Rule.Symbols[item.Marker];
+                        if (!nextSymbol.IsTerminal)
+                        {
+                            // Get all the possible lookaheads past this symbol
+                            var newLookaheads = new HashSet<Terminal>();
+                            foreach (var lookahead in item.Lookaheads)
+                            {
+                                var followingSymbols = item.Rule.Symbols
+                                    .Skip(item.Marker + 1)
+                                    .Concat(new Symbol(lookahead).Yield());
 
-//                                    // Create a new nonkernel item
-//                                    var newitem = new LRItem(rule, 0);
-//                                    toAdd.Add(newitem);
-//                                }
-//                            }
+                                newLookaheads.UnionWith(FirstOf(followingSymbols));
+                            }
 
-//                            if (hashset.Count > 0)
-//                                toAdd.Add(new LRItem())
-//                        }
-//                    }
-//                }
+                            if (newLookaheads.Any())
+                            {
+                                // For each rule of the production past the marker for this item
+                                foreach (var rule in Productions[nextSymbol.Nonterminal].Rules)
+                                {
+                                    // Create a new nonkernel item
+                                    var newitem = new LRItem(rule, 0, newLookaheads);
+                                    toAdd.Add(newitem);
+                                }
+                            }
+                        }
+                    }
+                }
 
-//                // Try to add the closure to the item set
-//                if (toAdd.Count > 0 && newset.TryUnionWith(toAdd))
-//                    changed = true;
+                // Try to add the closure to the item set
+                if (toAdd.Count > 0 && newset.Merge(toAdd))
+                    changed = true;
 
-//            } while (changed);
+            } while (changed);
 
-//            return newset;
-//        }
+            return newset;
+        }
 
-//        protected LRItemSet Goto(LRItemSet items, Symbol s)
-//        {
-//            // Start with an empty set.
-//            var newset = new LRItemSet(new LRItem[] { });
+        protected LRItemSet LR1Goto(LRItemSet items, Symbol s)
+        {
+            // Start with an empty set.
+            var newset = new LRItemSet(new LRItem[] { });
 
-//            // For each given item
-//            foreach (var item in items)
-//            {
-//                // If for this item we can advance the marker over the given grammar symbol,
-//                //   then we can go ahead and add this new item to the set.
-//                if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(s))
-//                    newset.Add(new LRItem(item.Rule, item.Marker + 1));
-//            }
+            // For each given item
+            foreach (var item in items)
+            {
+                // If for this item we can advance the marker over the given grammar symbol,
+                //   then we can go ahead and add this new item to the set.
+                if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(s))
+                    newset.Add(new LRItem(item.Rule, item.Marker + 1));
+            }
 
-//            // "Goto" is going to be the closure of this new set.
-//            return Closure(newset);
-//        } 
+            // "Goto" is going to be the closure of this new set.
+            return LR1Closure(newset);
+        }
 
-//        LRItemSetCollection ComputeLR0ItemSetKernels()
-//        {
-//            var set = ComputeLR0ItemSetCollection();
-//            set.RemoveNonkernels();
-//            return set;
-//        }
+        protected override LRItemSetCollection ComputeItemSetCollection()
+        {
+            var collection = ComputeLR0ItemSetCollection();
 
-//        LRItemSet GetGotosAndLookaheads(LRItemSet kernelSet, Symbol X)
-//        {
-//            var newSet = new Dictionary<LRItem, LRItem>();
+            // Must do this before removing the nonkernals.
+            var gotoSymbol = ComputeLR0GotoLookup(collection);
 
-//            foreach (var item in kernelSet)
-//            {
-//                var J = Closure(new LRItemSet(new[] { new LRItem(item.Rule, item.Marker, new HashSet<Terminal>(new[] { Unknown }), true) }));
+            collection.RemoveNonkernels();
+            //var stateItemLookup = 
+            //    collection
+            //    .Select(c => c.Select(i => new Tuple<int, LRItem>(c.Index, i))).SelectMany(i => i)
+            //    .ToDictionary(i => i, i => i.Item2);
+            var itemLookup = collection.ToDictionary(c => c);
 
-//                foreach (var j in J)
-//                {
-//                    if (j.Marker < j.Length && j.Rule.Symbols[j.Marker] == X)
-//                        newSet.Add(j);
-//                }
-//            }
+            // Determine propagation of lookaheads, and initialze lookaheads based on spontaneous generation
+            collection.StartState.Single().Lookaheads.Add(Eof);
+            var rulePropagations = new Dictionary<Tuple<int, LRItem>, HashSet<Tuple<int, LRItem>>>();
 
-//            var itemSet = new LRItemSet(newSet);
-//            itemSet.RemoveNonkernels();
-//            return itemSet;
-//        }
+            foreach (var itemset in collection)
+            {
+                foreach (var kernelitem in itemset)
+                {
+                    var dummyLookahead = new HashSet<Terminal>(Unknown.Yield());
+                    var dummyItem = new LRItem(kernelitem.Rule, kernelitem.Marker, dummyLookahead);
+                    var j = LR1Closure(new LRItemSet(dummyItem.Yield()));
 
-//        protected void ComputeItemSetCollection()
-//        {
-//            var lr0kernels = ComputeLR0ItemSetKernels();
+                    foreach (var sym in Symbols)
+                    {
+                        var gotoKey = new Tuple<int, Symbol>(itemset.Index, sym);
+                        //var @goto = LR1Goto(j, sym);
+                        LRItemSet gotoState;
+                        int gotoidx;
+                        //if (itemLookup.TryGetValue(@goto, out gotoState))
+                        if (gotoSymbol.TryGetValue(gotoKey, out gotoidx))
+                        {
+                            gotoState = collection[gotoidx];
+                            foreach (var b in j.Where(bb => bb.Marker < bb.Length && bb.Rule.Symbols[bb.Marker].Equals(sym)))
+                            {
+                                var newItem = new LRItem(b.Rule, b.Marker + 1);
+                                var gotoItem = gotoState.SingleOrDefault(i => i.Equals(newItem));
 
-//            var lr0kernelLookup = lr0kernels.ToDictionary(i => i, i => i);
+                                var itemKey = new Tuple<int, LRItem>(itemset.Index, kernelitem);
 
-//            // Initialize spontaneously generated lookaheads
-//            foreach (var set in lr0kernels)
-//            {
-//                foreach (var item in set)
-//                {
+                                // Note if lookaheads are propagated to the next item
+                                if (b.Lookaheads.Any(l => l == Unknown))
+                                {
+                                    if (!rulePropagations.ContainsKey(itemKey))
+                                        rulePropagations[itemKey] = new HashSet<Tuple<int, LRItem>>();
 
-//                }
-//            }
+                                    rulePropagations[itemKey].Add(new Tuple<int, LRItem>(gotoState.Index, gotoItem));
+                                }
+                                    
+                                gotoItem.Lookaheads.UnionWith(
+                                    b.Lookaheads.Where(l => l != Unknown)
+                                );
+                            }
+                        }
+                    }
+                }
+            }
 
-//            // Here's our big collection of item sets
-//            States = new LRItemSetCollection();
+            bool changed;
+            do
+            {
+                changed = false;
 
-//            // Start by adding the start symbol to the item set collection (a kernel item!)
-//            var startItem = new LRItemSet(new[] {
-//                new LRItem(Productions[Start].Rules.Single(), 0, true)
-//            });
-//            StartState = Closure(startItem);
-//            States.Add(StartState);
+                foreach (var state in collection)
+                {
+                    foreach (var item in state)
+                    {
+                        var itemKey = new Tuple<int, LRItem>(state.Index, item);
 
-//            // Keep looping until nothing more is added to the big collection.
-//            bool changed;
-//            do
-//            {
-//                changed = false;
-//                // Keep track of itemsets to add (we can't modify collection in foreach!)
-//                var toAdd = new LRItemSetCollection();
+                        HashSet<Tuple<int, LRItem>> propagated;
+                        if (rulePropagations.TryGetValue(itemKey, out propagated))
+                        {
+                            foreach (var key in propagated)
+                            {
+                                if (key.Item2.Lookaheads.TryUnionWith(item.Lookaheads))
+                                    changed = true;
+                            }
+                        }
+                    }
+                }
+            } while (changed);
 
-//                // For each item set already in the collection...
-//                foreach (var itemset in States)
-//                {
-//                    // For every grammar symbol...
-//                    foreach (var sym in Symbols)
-//                    {
-//                        // Calculate GOTO.
-//                        var _goto = Goto(itemset, sym);
+            // Close all the kernels
+            for (var i = 0; i < collection.Count; i++)
+            {
+                collection[i] = LR1Closure(collection[i]);
+                collection[i].Index = i;
+            }
 
-//                        // If there are any GOTOs and we haven't already added them...
-//                        if (_goto.Any())
-//                        {
-//                            // We're going to add this itemset.
-//                            if (!States.Contains(_goto))
-//                                toAdd.Add(_goto);
+            return collection;
+        }
 
-//                            // Also add a transition.
-//                            var transitionKey = new Tuple<LRItemSet, Symbol>(itemset, sym);
-//                            if (!GotoLookup.ContainsKey(transitionKey))
-//                            {
-//                                GotoLookup.Add(transitionKey, _goto);
-//                                changed = true;
-//                            }
+        protected override LRkParseTable ComputeParseTable()
+        {
+            var table = new LRkParseTable();
+            table.StartState = States.StartState.Index;
 
-//                        }
-//                    }
-//                }
+            foreach (var state in States)
+            {
+                foreach (var sym in Symbols)
+                {
+                    if (sym.IsTerminal)
+                    {
+                        var key = new Tuple<int, Terminal>(state.Index, sym.Terminal);
 
-//                // Add these new itemsets to the collection
-//                if (toAdd.Count > 0)
-//                {
-//                    var startIndex = States.Count;
-//                    States.AddRange(toAdd);
-//                    for (var i = startIndex; i < States.Count; i++)
-//                        States[i].State = i;
-//                }
+                        foreach (var item in state)
+                        {
+                            if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(sym))
+                            {
+                                int @goto;
+                                if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out @goto))
+                                {
+                                    table.Action[key] = new Action(Shift, @goto);
+                                }
+                            }
+                            else if (item.Length == item.Marker)
+                            {
+                                if (item.Rule.IsAccepting)
+                                {
+                                    if (sym.Terminal == Eof)
+                                        table.Action[key] = new Action(ActionType.Accept);
+                                }
+                                else if (item.Lookaheads.Contains(sym.Terminal) && item.Rule.Production.Lhs != Init)
+                                    table.Action[key] = new Action(Reduce, item.Rule.Index);
 
-//            } while (changed);
-//        }
-//    }
-//}
+                                // else don't add, will be error by default
+                            }
+                        }
+                    }
+                    else // Nonterminal
+                    {
+                        int @goto;
+                        if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out @goto))
+                        {
+                            table.Goto[new Tuple<int, Nonterminal>(state.Index, sym.Nonterminal)] = @goto;
+                        }
+                    }
+                }
+            }
+
+            return table;
+        }
+
+        protected override Dictionary<Tuple<int, Symbol>, int> ComputeGotoLookup()
+        {
+            var gotos = new Dictionary<Tuple<int, Symbol>, int>();
+
+            var stateLookup = States.ToDictionary(s => s, s => s);
+
+            // Now compute the goto table. Iterate over all items, once.
+            foreach (var itemset in States)
+            {
+                foreach (var sym in Symbols)
+                {
+                    // Calculate GOTO dynamically.
+                    var @goto = LR1Goto(itemset, sym);
+
+                    // If there are any gotos...
+                    if (@goto.Any())
+                    {
+                        var key = new Tuple<int, Symbol>(itemset.Index, sym);
+
+                        if (!gotos.ContainsKey(key))
+                        {
+                            // Match the dynamic goto with an actual state in our collection.
+                            LRItemSet existingGoto = null;
+
+                            if (stateLookup.TryGetValue(@goto, out existingGoto))
+                            {
+                                // Add the goto from state <itemset> to state <existingGoto> to the lookup for the Goto function.
+                                gotos[key] = existingGoto.Index;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            return gotos;
+        }
+    }
+}

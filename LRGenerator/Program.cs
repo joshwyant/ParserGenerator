@@ -13,22 +13,33 @@ namespace LRGenerator
     {
         public static void Main()
         {
-            Demo(new MyGrammar(), "var t = x + 3; if (y) { t += 1; }");
+            // Demo(new MyGrammar(), "var t = x + 3; if (y) { t += 1; }");
 
-            Demo(new MyBrokenGrammar(), "f(g<a, b<(c))");
+            Demo(new MyTestGrammar(), "if (5) { g<a, b>(c); } List<int> numbers = 3;");
 
             Console.Write("Press any key to continue...");
             Console.ReadKey(true);
         }
 
-        private static void Demo(SLRGrammar grammar, string toParse)
+        private static void Demo(LRkGrammar grammar, string toParse)
         {
             Console.WriteLine($"{grammar.GetType().Name}:");
             Console.WriteLine();
 
-            var srConflicts = grammar.ShiftReduceConflicts();
-            var rrConflicts = grammar.ReduceReduceConflicts();
-            var hasConflicts = srConflicts.Length > 0 || rrConflicts.Length > 0;
+            var t = grammar.States;
+
+            var hasConflicts = false;
+
+            var slr = grammar as SLRGrammar;
+            Tuple<LRItem, Symbol>[] srConflicts = null;
+            LRItemSet[] rrConflicts = null;
+
+            if (slr != null)
+            {
+                srConflicts = slr.ShiftReduceConflicts();
+                rrConflicts = slr.ReduceReduceConflicts();
+                hasConflicts = srConflicts.Length > 0 || rrConflicts.Length > 0;
+            }
 
             if (!hasConflicts)
             {
@@ -57,7 +68,7 @@ namespace LRGenerator
             }
             else
             {
-                if (srConflicts.Length > 0)
+                if (srConflicts?.Length > 0)
                 {
                     Console.WriteLine("Shift/Reduce conflicts (would favor shift):");
 
@@ -67,7 +78,7 @@ namespace LRGenerator
                     }
                     Console.WriteLine();
                 }
-                if (rrConflicts.Length > 0)
+                if (rrConflicts?.Length > 0)
                 {
                     Console.WriteLine("Reduce/Reduce conflicts (critical):");
 
@@ -100,6 +111,7 @@ namespace LRGenerator
     public class MyGrammar : SLRGrammar
     {
         public MyGrammar()
+            : base()
         {
             var start = DefineProduction(Start);
             var stmtList = DefineProduction(StatementList);
@@ -114,10 +126,9 @@ namespace LRGenerator
             var assignType = DefineProduction(AssignmentType);
 
             ProductionRule t;
-
+            
             t = start
                     % StatementList;
-            t.IsAccepting = true;
 
             // 
             // Statements
@@ -174,9 +185,10 @@ namespace LRGenerator
         }
     }
 
-    public class MyBrokenGrammar : SLRGrammar
+    public class MyTestGrammar : LALRGrammar
     {
-        public MyBrokenGrammar()
+        public MyTestGrammar()
+            : base()
         {
             var start = DefineProduction(Start);
             var stmtList = DefineProduction(StatementList);
@@ -191,6 +203,7 @@ namespace LRGenerator
             var term = DefineProduction(Term);
             var factor = DefineProduction(Factor);
             var typeName = DefineProduction(TypeName);
+            var simpleName = DefineProduction(SimpleName);
             var typeParams = DefineProduction(TypeParameters);
             var typeParamList = DefineProduction(TypeParameterList);
             var call = DefineProduction(Call);
@@ -199,11 +212,9 @@ namespace LRGenerator
             var assignType = DefineProduction(AssignmentType);
 
             ProductionRule t;
-
+            
             t = start
                     % StatementList;
-            t.IsAccepting = true;
-
             // 
             // Statements
             t = stmtList
@@ -226,8 +237,8 @@ namespace LRGenerator
             t = typeName % Float;
             t = typeName % Bool;
             t = typeName % Terminal.String;
-            t = typeName % Ident;
-            t = typeName % Ident / TypeParameters;
+            t = typeName % SimpleName;
+            t = typeName % SimpleName / TypeParameters;
             t = typeParams % LeftAngle / TypeParameterList / RightAngle;
             t = typeParamList % TypeParameterList / Comma / TypeName;
             t = typeParamList % TypeName;
@@ -243,9 +254,9 @@ namespace LRGenerator
             t = assignType % Var;
             t = assignType % TypeName;
             t = assignment
-                    % AssignmentType / Ident / Terminal.Equals / AssignmentExpression;
+                    % AssignmentType / SimpleName / Terminal.Equals / AssignmentExpression;
             t = assignment
-                    % AssignmentType / Ident / PlusEquals / AssignmentExpression;
+                    % AssignmentType / SimpleName / PlusEquals / AssignmentExpression;
             t = stmt
                     % SimpleStatement / Semicolon;
             t = stmt
@@ -259,9 +270,9 @@ namespace LRGenerator
             t = optExpr
                     % null;
             t = assignExpr
-                    % Ident / Terminal.Equals / AssignmentExpression;
+                    % SimpleName / Terminal.Equals / AssignmentExpression;
             t = assignExpr
-                    % Ident / PlusEquals / AssignmentExpression;
+                    % SimpleName / PlusEquals / AssignmentExpression;
             t = assignExpr
                     % Compare;
             t = compare
@@ -285,12 +296,12 @@ namespace LRGenerator
             t = factor
                     % LeftParen / Expression / RightParen;
             t = factor
-                    % TypeName;
-            t = factor
+                    % SimpleName;
+            t = simpleName
                     % Ident;
             t = factor
                     % Number;
-            t = factor % Call;
+            //t = factor % Call;
         }
     }
 }

@@ -48,5 +48,13 @@ namespace LRGenerator
                 }
             }
         }
+
+        public IEnumerable<Token> Flatten()
+        {
+            if (Symbol != null && Symbol.IsTerminal)
+                return Symbol.Token.Yield();
+            else
+                return Children.SelectMany(c => c.Flatten());
+        }
     }
 }

@@ -8,6 +8,7 @@ namespace LRGenerator
 {
     public enum Nonterminal
     {
+        Init,
         Start,
         StatementList,
         SimpleStatement,
@@ -15,10 +16,12 @@ namespace LRGenerator
         OptionalExpression,
         OptionalSimpleStatement,
         Expression,
+        Access,
         Assignment,
         AssignmentExpression,
         Compare,
         TypeName,
+        SimpleName,
         TypeParameters,
         TypeParameterList,
         Call,

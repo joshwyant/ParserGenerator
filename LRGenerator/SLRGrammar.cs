@@ -81,8 +81,10 @@ namespace LRGenerator
                                     if (sym.Terminal == Eof)
                                         table.Action[key] = new Action(ActionType.Accept);
                                 }
-                                else
+                                else if (Follow[item.Rule.Production.Lhs].Contains(sym.Terminal))
                                     table.Action[key] = new Action(Reduce, item.Rule.Index);
+
+                                // else don't add, will be error by default
                             }
                         }
                     }
@@ -102,7 +104,7 @@ namespace LRGenerator
 
         protected override Dictionary<Tuple<int, Symbol>, int> ComputeGotoLookup()
         {
-            return ComputeLR0GotoLookup();
+            return ComputeLR0GotoLookup(States);
         }
     }
 }

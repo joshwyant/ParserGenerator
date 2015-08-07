@@ -10,6 +10,13 @@ namespace LRGenerator
 {
     public abstract class LRkGrammar
     {
+        public LRkGrammar()
+        {
+            var init = DefineProduction(Init);
+            var initRules = init.Rules as List<ProductionRule>;
+            initRules.Add(new ProductionRule(init, new Symbol(Start).Yield()));
+        }
+
         #region Public Properties
         public Dictionary<Nonterminal, Production> Productions { get; } = new Dictionary<Nonterminal, Production>();
         public List<ProductionRule> IndexedProductions
@@ -212,10 +219,11 @@ namespace LRGenerator
 
             // Start by adding the start symbol to the item set collection (a kernel item!)
             var startItem = new LRItemSet(new[] {
-                new LRItem(Productions[Start].Rules.Single(), 0, true)
+                new LRItem(Productions[Init].Rules.Single(), 0, isKernel: true)
             });
             states.StartState = LR0Closure(startItem);
             states.Add(states.StartState);
+            Productions[Init].Rules.Single().IsAccepting = true;
 
             // Keep looping until nothing more is added to the big collection.
             bool changed;
@@ -227,6 +235,8 @@ namespace LRGenerator
                 // For each item set already in the collection...
                 foreach (var itemset in states)
                 {
+                    var lhs = itemset.Kernels.First().Rule.Production.Lhs;
+                    var marker = itemset.Kernels.First().Marker;
                     // For every grammar symbol...
                     foreach (var sym in Symbols)
                     {
@@ -236,6 +246,7 @@ namespace LRGenerator
                         // If there are any gotos...
                         if (@goto.Any())
                         {
+
                             // We're going to add this itemset.
                             if (!states.Contains(@goto))
                             {
@@ -275,14 +286,14 @@ namespace LRGenerator
                 }
             }
         }
-        protected internal Dictionary<Tuple<int, Symbol>, int> ComputeLR0GotoLookup()
+        protected internal Dictionary<Tuple<int, Symbol>, int> ComputeLR0GotoLookup(LRItemSetCollection collection)
         {
             var gotos = new Dictionary<Tuple<int, Symbol>, int>();
 
-            var stateLookup = States.ToDictionary(s => s, s => s);
+            var stateLookup = collection.ToDictionary(s => s, s => s);
 
             // Now compute the goto table. Iterate over all items, once.
-            foreach (var itemset in States)
+            foreach (var itemset in collection)
             {
                 foreach (var sym in Symbols)
                 {
@@ -342,6 +353,9 @@ namespace LRGenerator
             // Set the FIRST sets of terminals to themselves
             foreach (var k in Symbols.Where(tnt => tnt.IsTerminal))
                 First[k].Add(k.Terminal);
+
+            // Add Eof to Follows[Start]
+            Follow[Start].Add(Eof);
 
             bool changed;
 
