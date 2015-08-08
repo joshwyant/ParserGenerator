@@ -16,6 +16,7 @@ namespace ParserGenerator
             public GrammarBase<Terminal_T, Nonterminal_T> Grammar { get; }
             public LexerBase Lexer { get; }
             public List<string> Errors { get; }  = new List<string>();
+            public bool HasErrors { get { return Errors.Count != 0; } }
 
             public Parser(GrammarBase<Terminal_T, Nonterminal_T> g, LexerBase l)
             {

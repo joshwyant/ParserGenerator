@@ -10,5 +10,13 @@ namespace TestLanguage
     {
         Init,
         Start,
+        CompileUnit,
+        UsingDirectivesOptional,
+        UsingDirectives,
+        UsingDirective,
+        FullyQualifiedNamespace,
+        NamespaceDeclarationsOptional,
+        NamespaceDeclarations,
+        NamespaceDeclaration,
     }
 }

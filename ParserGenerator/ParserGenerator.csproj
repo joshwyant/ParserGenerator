@@ -48,6 +48,7 @@
     <Compile Include="Common\Action.cs" />
     <Compile Include="Common\ActionType.cs" />
     <Compile Include="Grammar\AstNode.cs" />
+    <Compile Include="Grammar\GrammarExtensions.cs" />
     <Compile Include="Grammar\GrammarBase.cs" />
     <Compile Include="Grammar\Parser.cs" />
     <Compile Include="Utility\IPeekable.cs" />

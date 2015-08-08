@@ -64,6 +64,56 @@ namespace ParserGenerator
             {
                 return FlattenToEnumerable().AsPeekable();
             }
+
+            public AstNode Search(int start, params Symbol[] types)
+            {
+                if (types.Contains(Symbol))
+                    return this;
+
+                foreach (var c in Children.Skip(start))
+                {
+                    var found = c.Search(0, types);
+                    if (found != null)
+                        return found;
+                }
+                return null;
+            }
+
+            public AstNode Search(Symbol type, int start = 0)
+            {
+                if (type.Equals(Symbol))
+                    return this;
+
+                foreach (var c in Children.Skip(start))
+                {
+                    var found = c.Search(type, start);
+                    if (found != null)
+                        return found;
+                }
+                return null;
+            }
+
+            public IEnumerable<AstNode> SearchAll(Symbol type, int start = 0)
+            {
+                if (type.Equals(Symbol))
+                {
+                    yield return this;
+                    yield break;
+                }
+
+                foreach (var c in Children.Skip(start))
+                {
+                    foreach (var found in c.SearchAll(type))
+                    {
+                        yield return found;
+                    }
+                }
+            }
+
+            public AstNode Search(params Symbol[] types)
+            {
+                return Search(0, types);
+            }
         }
 
     }

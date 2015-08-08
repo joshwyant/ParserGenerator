@@ -12,19 +12,43 @@ namespace ParserGenerator
         {
             public Nonterminal_T Lhs { get; }
             public IReadOnlyList<ProductionRule> Rules { get; }
+            List<ProductionRule> list;
 
             internal Production(Nonterminal_T lhs)
             {
                 Lhs = lhs;
-                Rules = new List<ProductionRule>();
+                Rules = list = new List<ProductionRule>();
             }
 
             public static ProductionRule operator%(Production p, Symbol s)
             {
-                var list = p.Rules as List<ProductionRule>;
                 var r = new ProductionRule(p, s == null ? new Symbol[0] : new[] { s });
-                list.Add(r);
+                p.list.Add(r);
                 return r;
+            }
+
+            public Production Or(params Symbol[] symbols)
+            {
+                if (list.Count == 0)
+                    throw new InvalidOperationException();
+
+                list.Add(new ProductionRule(this, symbols));
+                return this;
+            }
+
+            public Production As(params Symbol[] symbols)
+            {
+                if (list.Count != 0)
+                    throw new InvalidOperationException();
+
+                list.Add(new ProductionRule(this, symbols));
+                return this;
+            }
+
+            public Production Optional()
+            {
+                list.Add(new ProductionRule(this, new Symbol[0]));
+                return this;
             }
 
             public override int GetHashCode()

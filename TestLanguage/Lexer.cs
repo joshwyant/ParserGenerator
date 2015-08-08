@@ -21,59 +21,18 @@ namespace TestLanguage
             public static Dictionary<string, Terminal> ReservedWords { get; } 
                 = new Dictionary<string, Terminal>
             {
-                { "asm", Asm },
-                { "naked", Naked },
-                { "null", Null },
-                { "true", True },
-                { "false", False },
-                { "const", Const },
-                { "object", Terminal.Object },
-                { "void", Terminal.Void },
-                { "byte", Terminal.Byte },
-                { "bool", Bool },
-                { "char", Terminal.Char },
-                { "string", Terminal.String },
-                { "short", Short },
-                { "int", Int },
-                { "uint", UInt },
-                { "long", Long },
-                { "ulong", ULong },
-                { "float", Float },
-                { "double", Terminal.Double },
-                { "decimal", Terminal.Decimal },
-                { "using", Using },
-                { "namespace", Namespace },
-                { "public", Public },
-                { "private", Private },
-                { "protected", Protected },
-                { "static", Static },
-                { "class", Class },
-                { "struct", Struct },
-                { "for", For },
-                { "while", While },
-                { "do", Do },
-                { "foreach", ForEach },
-                { "break", Break },
-                { "continue", Continue },
-                { "switch", Switch },
-                { "default", Default },
-                { "case", Case },
-                { "try", Try },
-                { "catch", Catch },
-                { "finally", Finally },
-                { "throw", Throw },
-                { "new", New },
-                { "typeof", Typeof },
-                { "goto", Goto },
-                { "return", Return },
-                { "virtual", Virtual },
-                { "interface", Interface },
-                { "delegate", Terminal.Delegate },
-                { "if", If },
-                { "else", Else },
-                { "enum", Terminal.Enum },
-                { "lock", Lock },
-                { "var", Var }
+                { "asm", Asm }, { "naked", Naked }, { "null", Null }, { "true", True }, { "false", False },
+                { "const", Const }, { "object", Terminal.Object }, { "void", Terminal.Void }, { "byte", Terminal.Byte },
+                { "bool", Bool }, { "char", Terminal.Char }, { "string", Terminal.String }, { "short", Short },
+                { "int", Int }, { "uint", UInt }, { "long", Long }, { "ulong", ULong }, { "float", Float },
+                { "double", Terminal.Double }, { "decimal", Terminal.Decimal }, { "using", Using },
+                { "namespace", Namespace }, { "public", Public }, { "private", Private }, { "protected", Protected },
+                { "static", Static }, { "class", Class }, { "struct", Struct }, { "for", For }, { "while", While },
+                { "do", Do }, { "foreach", ForEach }, { "break", Break }, { "continue", Continue }, { "switch", Switch },
+                { "default", Default }, { "case", Case }, { "try", Try }, { "catch", Catch }, { "finally", Finally },
+                { "throw", Throw }, { "new", New }, { "typeof", Typeof }, { "goto", Goto }, { "return", Return },
+                { "virtual", Virtual }, { "interface", Interface }, { "delegate", Terminal.Delegate },
+                { "if", If }, { "else", Else }, { "enum", Terminal.Enum }, { "lock", Lock }, { "var", Var },
             };
 
             public Lexer(TextReader reader) : base(reader) { }
@@ -122,6 +81,8 @@ namespace TestLanguage
                     startcol = col;
                     lexemeBuilder.Clear();
 
+                    Func<Terminal, Token> makeToken = t => new Token(t, lexemeBuilder.ToString());
+
                     // Scan whitespace
                     while (char.IsWhiteSpace(Reader.Peek()))
                     {
@@ -133,7 +94,7 @@ namespace TestLanguage
                     }
                     if (lexemeBuilder.Length > 0)
                     {
-                        yield return new Token(Whitespace, lexemeBuilder.ToString());
+                        yield return makeToken(Whitespace);
                         continue;
                     }
 
@@ -188,12 +149,12 @@ namespace TestLanguage
                             // Division assignment
                             case '=':
                                 read();
-                                yield return new Token(DivisionAssignment);
+                                yield return makeToken(DivisionAssignment);
                                 break;
 
                             // Division
                             default:
-                                yield return new Token(Divide);
+                                yield return makeToken(Divide);
                                 break;
                         }
 
@@ -209,9 +170,12 @@ namespace TestLanguage
                         read();
 
                         // Make sure it precedes a string or identifier. If not, return our invalid "Verbatim" token.
-                        if (!((Reader.Peek() >= 'a' && Reader.Peek() <= 'z') || (Reader.Peek() >= 'A' && Reader.Peek() <= 'Z') || Reader.Peek() == '_' || Reader.Peek() == '\"'))
+                        if (!((Reader.Peek() >= 'a' && Reader.Peek() <= 'z') || 
+                            (Reader.Peek() >= 'A' && Reader.Peek() <= 'Z') || 
+                            Reader.Peek() == '_' || 
+                            Reader.Peek() == '\"'))
                         {
-                            yield return new Token(Terminal.Unknown);
+                            yield return makeToken(Terminal.Unknown);
                             continue;
                         }
                     }
@@ -239,7 +203,7 @@ namespace TestLanguage
                             if (!ReservedWords.TryGetValue(name, out keyword))
                                 yield return new IdentifierToken(name);
                             else
-                                yield return new Token(keyword);
+                                yield return makeToken(keyword);
                         }
                     }
                     // Does it start a number then? (Or is it a dot?)
@@ -259,7 +223,7 @@ namespace TestLanguage
                             // If the next character is not a number, then we just have a dot.
                             if (Reader.HasNext() || !(Reader.Peek() >= '0' && Reader.Peek() <= '9'))
                             {
-                                yield return new Token(Dot);
+                                yield return makeToken(Dot);
                                 continue; // Begin scanning the next token.
                             }
 
@@ -607,8 +571,8 @@ namespace TestLanguage
                             c == '+' ||
                             c == '-' ||
                             c == '=' ||
-                            c == '<' ||
-                            c == '>')
+                            c == '<' /*||
+                            c == '>'*/)
                         {
                             if (c == Reader.Peek())
                             {
@@ -616,13 +580,13 @@ namespace TestLanguage
                                 doubled = true;
                             }
 
-                            if (Reader.Peek() == '=' && ((c == '<') || (c == '>')))
+                            if (Reader.Peek() == '=' && ((c == '<') /*|| (c == '>')*/))
                             {
                                 read();
-                                if (c == '<')
-                                    yield return new Token(ShiftLeftAssignment);
-                                else
-                                    yield return new Token(ShiftRightAssignment);
+                                //if (c == '<')
+                                    yield return makeToken(ShiftLeftAssignment);
+                                //else
+                                //    yield return makeToken(ShiftRightAssignment);
                                 continue;
                             }
                         }
@@ -638,37 +602,37 @@ namespace TestLanguage
                         switch (c)
                         {
                             case '&':
-                                yield return new Token(doubled ? LogicalAnd : equalsSign ? AndAssignment : BitwiseAnd);
+                                yield return makeToken(doubled ? LogicalAnd : equalsSign ? AndAssignment : BitwiseAnd);
                                 break;
                             case '|':
-                                yield return new Token(doubled ? LogicalOr : equalsSign ? OrAssignment : BitwiseOr);
+                                yield return makeToken(doubled ? LogicalOr : equalsSign ? OrAssignment : BitwiseOr);
                                 break;
                             case '+':
-                                yield return new Token(doubled ? Increment : equalsSign ? AdditionAssignment : Add);
+                                yield return makeToken(doubled ? Increment : equalsSign ? AdditionAssignment : Add);
                                 break;
                             case '-':
-                                yield return new Token(doubled ? Decrement : equalsSign ? SubtractionAssignment : Subtract);
+                                yield return makeToken(doubled ? Decrement : equalsSign ? SubtractionAssignment : Subtract);
                                 break;
                             case '=':
-                                yield return new Token(doubled ? Equality : equalsSign ? Equality : Assignment);
+                                yield return makeToken(doubled ? Equality : equalsSign ? Equality : Assignment);
                                 break;
                             case '<':
-                                yield return new Token(doubled ? ShiftLeft : equalsSign ? LessThanOrEqual : LessThan);
+                                yield return makeToken(doubled ? ShiftLeft : equalsSign ? LessThanOrEqual : LessThan);
                                 break;
-                            case '>':
-                                yield return new Token(doubled ? ShiftRight : equalsSign ? GreaterThanOrEqual : GreaterThan);
-                                break;
+                            //case '>':
+                            //    yield return makeToken(doubled ? ShiftRight : equalsSign ? GreaterThanOrEqual : GreaterThan);
+                            //    break;
                             case '!':
-                                yield return new Token(equalsSign ? NotEqual : Not);
+                                yield return makeToken(equalsSign ? NotEqual : Not);
                                 break;
                             case '%':
-                                yield return new Token(equalsSign ? ModAssignment : Mod);
+                                yield return makeToken(equalsSign ? ModAssignment : Mod);
                                 break;
                             case '*':
-                                yield return new Token(equalsSign ? MultiplicationAssignment : Multiply);
+                                yield return makeToken(equalsSign ? MultiplicationAssignment : Multiply);
                                 break;
                             case '^':
-                                yield return new Token(equalsSign ? XorAssignment : BitwiseXor);
+                                yield return makeToken(equalsSign ? XorAssignment : BitwiseXor);
                                 break;
                         }
                     }
@@ -685,40 +649,40 @@ namespace TestLanguage
                         switch (c)
                         {
                             case '~':
-                                yield return new Token(BitwiseNegate);
+                                yield return makeToken(BitwiseNegate);
                                 break;
                             case '(':
-                                yield return new Token(LeftParenthesis);
+                                yield return makeToken(LeftParenthesis);
                                 break;
                             case ')':
-                                yield return new Token(RightParenthesis);
+                                yield return makeToken(RightParenthesis);
                                 break;
                             case '{':
-                                yield return new Token(LeftCurlyBrace);
+                                yield return makeToken(LeftCurlyBrace);
                                 break;
                             case '}':
-                                yield return new Token(RightCurlyBrace);
+                                yield return makeToken(RightCurlyBrace);
                                 break;
                             case '[':
-                                yield return new Token(LeftSquareBracket);
+                                yield return makeToken(LeftSquareBracket);
                                 break;
                             case ']':
-                                yield return new Token(RightSquareBracket);
+                                yield return makeToken(RightSquareBracket);
                                 break;
                             case ':':
-                                yield return new Token(Colon);
+                                yield return makeToken(Colon);
                                 break;
                             case ';':
-                                yield return new Token(Semicolon);
+                                yield return makeToken(Semicolon);
                                 break;
                             case ',':
-                                yield return new Token(Comma);
+                                yield return makeToken(Comma);
                                 break;
                             case '?':
-                                yield return new Token(QuestionMark);
+                                yield return makeToken(QuestionMark);
                                 break;
                             default:
-                                yield return new Token(Terminal.Unknown);
+                                yield return makeToken(Terminal.Unknown);
                                 break;
                         }
                     }
