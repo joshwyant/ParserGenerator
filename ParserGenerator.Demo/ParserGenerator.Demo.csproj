@@ -54,7 +54,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LRGenerator\ParserGenerator.csproj">
+    <ProjectReference Include="..\ParserGenerator\ParserGenerator.csproj">
       <Project>{34637fe2-115a-4977-92fd-59455d56190e}</Project>
       <Name>ParserGenerator</Name>
     </ProjectReference>

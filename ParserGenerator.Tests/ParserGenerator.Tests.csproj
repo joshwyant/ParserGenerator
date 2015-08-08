@@ -55,11 +55,11 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LRGenerator.Demo\ParserGenerator.Demo.csproj">
+    <ProjectReference Include="..\ParserGenerator.Demo\ParserGenerator.Demo.csproj">
       <Project>{2fe399e2-887d-4a29-a54f-fdb776f5cc8f}</Project>
       <Name>ParserGenerator.Demo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LRGenerator\ParserGenerator.csproj">
+    <ProjectReference Include="..\ParserGenerator\ParserGenerator.csproj">
       <Project>{34637fe2-115a-4977-92fd-59455d56190e}</Project>
       <Name>ParserGenerator</Name>
     </ProjectReference>

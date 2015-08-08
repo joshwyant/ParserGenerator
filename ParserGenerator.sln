@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator", "LRGenerator\ParserGenerator.csproj", "{34637FE2-115A-4977-92FD-59455D56190E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator", "ParserGenerator\ParserGenerator.csproj", "{34637FE2-115A-4977-92FD-59455D56190E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator.Tests", "LRGenerator.Tests\ParserGenerator.Tests.csproj", "{A3F521F4-F4F1-4BD3-B760-E55D68A781BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator.Tests", "ParserGenerator.Tests\ParserGenerator.Tests.csproj", "{A3F521F4-F4F1-4BD3-B760-E55D68A781BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator.Demo", "LRGenerator.Demo\ParserGenerator.Demo.csproj", "{2FE399E2-887D-4A29-A54F-FDB776F5CC8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserGenerator.Demo", "ParserGenerator.Demo\ParserGenerator.Demo.csproj", "{2FE399E2-887D-4A29-A54F-FDB776F5CC8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
