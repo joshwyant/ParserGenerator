@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,21 +9,8 @@ using static LRGenerator.Terminal;
 
 namespace LRGenerator
 {
-    public class Lexer
+    public class Lexer : IPeekable<Token>
     {
-        const char Eof = '\xFFFF';
-
-        public TextReader Reader { get; }
-
-        public Lexer(TextReader reader)
-        {
-            Reader = reader;
-        }
-
-        char? peek;
-        char peekc() { return (peek ?? (peek = (char)Reader.Peek())).Value; }
-        char readc() { peek = null; return (char)Reader.Read(); }
-
         Dictionary<string, Terminal> ReservedWords { get; } 
             = new Dictionary<string, Terminal>
         {
@@ -30,54 +18,35 @@ namespace LRGenerator
             { "bool", Bool }, { "string", Terminal.String }
         };
 
-        Token peekToken;
-        public Token Peek()
-        {
-            if (peekToken == null)
-                peekToken = Read();
+        CharacterReader reader;
+        IPeekable<Token> peekable;
 
-            return peekToken;
+        public Lexer(TextReader reader)
+        {
+            this.reader = new CharacterReader(reader);
+            this.peekable = Lex().AsPeekable();
         }
 
-        IEnumerator<Token> enumerator;
-        public Token Read()
+        private IEnumerable<Token> Lex()
         {
-            var token = peekToken;
-
-            if (token == null)
+            while (reader.HasNext())
             {
-                if (enumerator == null)
-                    enumerator = Lex().GetEnumerator();
-
-                enumerator.MoveNext();
-                token = enumerator.Current;
-            }
-
-            peekToken = null;
-
-            return token;
-        }
-
-        public IEnumerable<Token> Lex()
-        {
-            while (peekc() != Eof)
-            {
-                while (char.IsWhiteSpace(peekc()))
+                while (char.IsWhiteSpace(reader.Peek()))
                 {
-                    readc();
+                    reader.Read();
                     continue;
                 }
 
-                if (peekc() == Eof) break;
+                if (!reader.HasNext()) break;
 
                 var sb = new StringBuilder();
                 
-                var c = peekc();
+                var c = reader.Peek();
 
                 if (char.IsLetter(c) || c == '_')
                 {
-                    while (char.IsLetterOrDigit(peekc()) || peekc() == '_')
-                        sb.Append(readc());
+                    while (char.IsLetterOrDigit(reader.Peek()) || reader.Peek() == '_')
+                        sb.Append(reader.Read());
 
                     var ident = sb.ToString();
 
@@ -89,8 +58,8 @@ namespace LRGenerator
                 }
                 else if (char.IsNumber(c))
                 {
-                    while (char.IsNumber(peekc()) || peekc() == '.')
-                        sb.Append(readc());
+                    while (char.IsNumber(reader.Peek()) || reader.Peek() == '.')
+                        sb.Append(reader.Read());
 
                     var num = sb.ToString();
 
@@ -99,13 +68,13 @@ namespace LRGenerator
                 else
                 {
                     var cc = c.ToString(); // lexeme
-                    switch (readc())
+                    switch (reader.Read())
                     {
                         case '+':
                             {
-                                if (peekc() == '=')
+                                if (reader.Peek() == '=')
                                 {
-                                    readc();
+                                    reader.Read();
                                     yield return new Token(PlusEquals, "+=");
                                     break;
                                 }
@@ -131,5 +100,32 @@ namespace LRGenerator
 
             yield return new Token(Terminal.Eof);
         }
+
+        #region IPeekable<Token>
+        public Token Read()
+        {
+            return peekable.Read();
+        }
+
+        public Token Peek()
+        {
+            return peekable.Peek();
+        }
+
+        public bool HasNext()
+        {
+            return peekable.HasNext();
+        }
+
+        public IEnumerator<Token> GetEnumerator()
+        {
+            return peekable.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return peekable.GetEnumerator();
+        }
+        #endregion
     }
 }

@@ -20,13 +20,13 @@ namespace LRGenerator
         public LRkParser(LRkGrammar g, string s)
         {
             Grammar = g;
-            Tokens = new Lexer(new StringReader(s)).Lex(); // Lazy lex
+            Tokens = new Lexer(new StringReader(s)); // Lazy lex
         }
 
         public LRkParser(LRkGrammar g, Stream s)
         {
             Grammar = g;
-            Tokens = new Lexer(new StreamReader(s)).Lex();
+            Tokens = new Lexer(new StreamReader(s));
         }
 
         public AstNode ParseAst()

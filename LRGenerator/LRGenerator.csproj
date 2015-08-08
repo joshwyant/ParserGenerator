@@ -47,9 +47,11 @@
     <Compile Include="Action.cs" />
     <Compile Include="ActionType.cs" />
     <Compile Include="AstNode.cs" />
+    <Compile Include="IPeekable.cs" />
     <Compile Include="LALRGrammar.cs" />
     <Compile Include="LRkParseTable.cs" />
     <Compile Include="LRParsingTable.cs" />
+    <Compile Include="PeekableExtensions.cs" />
     <Compile Include="SLRGrammar.cs" />
     <Compile Include="LRkGrammar.cs" />
     <Compile Include="LRItemSet.cs" />
@@ -65,6 +67,7 @@
     <Compile Include="Symbol.cs" />
     <Compile Include="SymbolList.cs" />
     <Compile Include="Terminal.cs" />
+    <Compile Include="CharacterReader.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="UtilityExtensions.cs" />
   </ItemGroup>
