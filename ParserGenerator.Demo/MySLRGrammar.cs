@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ParserGenerator.Demo.Terminal;
 using static ParserGenerator.Demo.Nonterminal;
+using System.IO;
 
 namespace ParserGenerator.Demo
 {
@@ -82,6 +83,11 @@ namespace ParserGenerator.Demo
                     % Ident;
             t = factor
                     % Number;
+        }
+
+        public override LexerBase GetLexer(TextReader reader)
+        {
+            return new Lexer(reader);
         }
     }
 }

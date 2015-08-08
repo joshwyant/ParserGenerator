@@ -15,8 +15,6 @@ namespace ParserGenerator.Demo
 
             Demo(
                 new MyLALRGrammar(), 
-                (grammar, str) => 
-                    new MyLALRGrammar.Parser(grammar, new MyLALRGrammar.MyLexer(str)), 
                 "if (5) { g<a, b>(c); } List<int> numbers = 3;"
             );
 
@@ -24,7 +22,7 @@ namespace ParserGenerator.Demo
             Console.ReadKey(true);
         }
 
-        private static void Demo(LRkGrammar<Terminal, Nonterminal> grammar, Func<LRkGrammar<Terminal, Nonterminal>, string, LRkGrammar<Terminal, Nonterminal>.Parser> newParser, string toParse)
+        private static void Demo(LRkGrammar<Terminal, Nonterminal> grammar, string toParse)
         {
             Console.WriteLine($"{grammar.GetType().Name}:");
             Console.WriteLine();
@@ -48,8 +46,8 @@ namespace ParserGenerator.Demo
             {
                 while (!string.IsNullOrEmpty(toParse))
                 {
-                    var p = newParser(grammar, toParse);
-                    var ast = p.ParseAst();
+                    var p = grammar.GetParser(new StringReader(toParse));
+                    var ast = p.Parse(); // Could just call grammar.Parse(string), but we want to see the errors.
 
                     if (p.Errors.Count > 0)
                     {

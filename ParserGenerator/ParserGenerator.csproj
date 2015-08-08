@@ -49,6 +49,7 @@
     <Compile Include="Common\ActionType.cs" />
     <Compile Include="Grammar\AstNode.cs" />
     <Compile Include="Grammar\Grammar.cs" />
+    <Compile Include="Grammar\Parser.cs" />
     <Compile Include="Utility\IPeekable.cs" />
     <Compile Include="LR\LALRGrammar.cs" />
     <Compile Include="LR\LRkParsingTable.cs" />
@@ -58,7 +59,7 @@
     <Compile Include="LR\LRItemSet.cs" />
     <Compile Include="LR\LRItem.cs" />
     <Compile Include="LR\LRItemSetCollection.cs" />
-    <Compile Include="Lexer\Lexer.cs" />
+    <Compile Include="Lexer\LexerBase.cs" />
     <Compile Include="LR\LRkParser.cs" />
     <Compile Include="Grammar\ProductionRule.cs" />
     <Compile Include="Grammar\Production.cs" />

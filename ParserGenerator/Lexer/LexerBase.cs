@@ -11,20 +11,14 @@ namespace ParserGenerator
 {
     public abstract partial class Grammar<Terminal_T, Nonterminal_T>
     {
-        public abstract class Lexer : IPeekable<Token>
+        public abstract class LexerBase : IPeekable<Token>
         {
             protected IPeekable<char> Reader { get; }
             IPeekable<Token> peekable;
 
-            public Lexer(Stream s)
+            public LexerBase(TextReader reader)
             {
-                this.Reader = new CharacterReader(new StreamReader(s));
-                this.peekable = Lex().AsPeekable();
-            }
-
-            public Lexer(string s)
-            {
-                this.Reader = new CharacterReader(new StringReader(s));
+                this.Reader = new CharacterReader(reader);
                 this.peekable = Lex().AsPeekable();
             }
 

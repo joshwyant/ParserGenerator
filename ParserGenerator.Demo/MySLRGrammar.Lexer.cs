@@ -10,9 +10,9 @@ using static ParserGenerator.Demo.Terminal;
 
 namespace ParserGenerator.Demo
 {
-    public partial class MyLALRGrammar
+    public partial class MySLRGrammar
     {
-        public class MyLexer : Lexer
+        public class Lexer : LexerBase
         {
             Dictionary<string, Terminal> ReservedWords { get; } 
                 = new Dictionary<string, Terminal>
@@ -21,7 +21,7 @@ namespace ParserGenerator.Demo
                 { "bool", Bool }, { "string", Terminal.String }
             };
 
-            public MyLexer(string s) : base(s) { }
+            public Lexer(TextReader reader) : base(reader) { }
 
             protected override IEnumerable<Token> Lex()
             {

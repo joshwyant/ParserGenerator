@@ -1,6 +1,7 @@
 ﻿using ParserGenerator.Utility;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -122,6 +123,27 @@ namespace ParserGenerator
 
             return p;
         }
+        public AstNode Parse(string s)
+        {
+            return Parse(new StringReader(s));
+        }
+        public AstNode Parse(Stream s)
+        {
+            return Parse(new StreamReader(s));
+        }
+        public AstNode Parse(StringReader s)
+        {
+            return GetParser(s).Parse();
+        }
+        public AstNode Parse(StreamReader s)
+        {
+            return GetParser(s).Parse();
+        }
+        #endregion
+
+        #region Abstract Methods
+        public abstract Parser GetParser(TextReader reader);
+        public abstract LexerBase GetLexer(TextReader reader);
         #endregion
 
         #region Protected Internal Methods

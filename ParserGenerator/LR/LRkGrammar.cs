@@ -1,6 +1,7 @@
 ﻿using ParserGenerator.Utility;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -199,6 +200,13 @@ namespace ParserGenerator
             }
 
             return gotos;
+        }
+        #endregion
+
+        #region Protected Methods
+        public override Parser GetParser(TextReader s)
+        {
+            return new LRParser(this, GetLexer(s));
         }
         #endregion
 

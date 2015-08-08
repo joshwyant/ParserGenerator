@@ -8,6 +8,7 @@ using ParserGenerator.Demo;
 using static ParserGenerator.Demo.Terminal;
 using static ParserGenerator.Demo.Nonterminal;
 using ParserGenerator.Utility;
+using System.IO;
 
 namespace ParserGenerator.Tests
 {
@@ -42,6 +43,21 @@ namespace ParserGenerator.Tests
                     Ident;
                 t = expression %
                     Access;
+            }
+
+            public class Lexer : LexerBase
+            {
+                public Lexer(TextReader reader) : base(reader) { }
+
+                protected override IEnumerable<Token> Lex()
+                {
+                    yield return new Token(Terminal.Eof);
+                }
+            }
+
+            public override LexerBase GetLexer(TextReader reader)
+            {
+                return new Lexer(reader);
             }
 
             public LRItemSetCollection MockKernels()

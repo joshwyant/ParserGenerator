@@ -11,28 +11,24 @@ namespace ParserGenerator
 {
     public abstract partial class LRkGrammar<Terminal_T, Nonterminal_T>
     {
-        public class Parser
+        public class LRParser : Parser
         {
-            internal LRkGrammar<Terminal_T, Nonterminal_T> Grammar { get; }
-            IEnumerable<Token> Tokens { get; }
             Stack<Tuple<AstNode, int>> Stack { get; } = new Stack<Tuple<AstNode, int>>();
-            public List<string> Errors { get; }  = new List<string>();
 
-            public Parser(LRkGrammar<Terminal_T, Nonterminal_T> g, Lexer l)
-            {
-                Grammar = g;
-                Tokens = l; // Lazy lex
-            }
+            public LRParser(LRkGrammar<Terminal_T, Nonterminal_T> g, LexerBase l)
+                : base(g, l) { }
 
-            public AstNode ParseAst()
+            public override AstNode Parse()
             {
-                var table = Grammar.ParseTable;
+                var grammar = Grammar as LRkGrammar<Terminal_T, Nonterminal_T>;
+
+                var table = grammar.ParseTable;
                 var currentState = table.StartState;
 
                 // Push the start state onto the stack
                 Stack.Push(new Tuple<AstNode, int>(new AstNode(Grammar.Start), currentState));
 
-                foreach (var t in Tokens)
+                foreach (var t in Lexer)
                 {
                     // Reduce any number of times for a given token. Always advance to the next token for no reduction.
                     bool reduced;
