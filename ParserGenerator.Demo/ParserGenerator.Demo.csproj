@@ -44,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyLALRGrammar.cs" />
     <Compile Include="MyLexer_LALR.cs" />
+    <Compile Include="MySLRGrammar.cs" />
     <Compile Include="Nonterminal.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

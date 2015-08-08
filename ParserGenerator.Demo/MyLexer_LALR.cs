@@ -21,13 +21,7 @@ namespace ParserGenerator.Demo
                 { "bool", Bool }, { "string", Terminal.String }
             };
 
-            public MyLexer(string s)
-                : base(s)
-            { }
-
-            public MyLexer(Stream s)
-                : base(s)
-            { }
+            public MyLexer(string s) : base(s) { }
 
             protected override IEnumerable<Token> Lex()
             {
