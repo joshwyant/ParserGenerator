@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ParserGenerator
 {
     public abstract partial class LRkGrammar<Terminal_T, Nonterminal_T>
-        : Grammar<Terminal_T, Nonterminal_T>
+        : GrammarBase<Terminal_T, Nonterminal_T>
         where Terminal_T: struct, IComparable, IConvertible
         where Nonterminal_T: struct, IComparable, IConvertible
     {

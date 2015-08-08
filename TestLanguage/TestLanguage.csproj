@@ -4,16 +4,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{34637FE2-115A-4977-92FD-59455D56190E}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{0664F198-1745-4B7E-B73F-DD65152AFD29}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ParserGenerator</RootNamespace>
-    <AssemblyName>ParserGenerator</AssemblyName>
+    <RootNamespace>TestLanguage</RootNamespace>
+    <AssemblyName>TestLanguage</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,16 +25,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,32 +44,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Action.cs" />
-    <Compile Include="Common\ActionType.cs" />
-    <Compile Include="Grammar\AstNode.cs" />
-    <Compile Include="Grammar\GrammarBase.cs" />
-    <Compile Include="Grammar\Parser.cs" />
-    <Compile Include="Utility\IPeekable.cs" />
-    <Compile Include="LR\LALRGrammar.cs" />
-    <Compile Include="LR\LRkParsingTable.cs" />
-    <Compile Include="Utility\PeekableExtensions.cs" />
-    <Compile Include="LR\SLRGrammar.cs" />
-    <Compile Include="LR\LRkGrammar.cs" />
-    <Compile Include="LR\LRItemSet.cs" />
-    <Compile Include="LR\LRItem.cs" />
-    <Compile Include="LR\LRItemSetCollection.cs" />
-    <Compile Include="Lexer\LexerBase.cs" />
-    <Compile Include="LR\LRkParser.cs" />
-    <Compile Include="Grammar\ProductionRule.cs" />
-    <Compile Include="Grammar\Production.cs" />
+    <Compile Include="Grammar.cs" />
+    <Compile Include="Lexer.cs" />
+    <Compile Include="Nonterminal.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Grammar\Symbol.cs" />
-    <Compile Include="Grammar\SymbolList.cs" />
-    <Compile Include="Utility\CharacterReader.cs" />
-    <Compile Include="Grammar\Token.cs" />
-    <Compile Include="Utility\UtilityExtensions.cs" />
+    <Compile Include="Terminal.cs" />
+    <Compile Include="Tokens\NumberToken.cs" />
+    <Compile Include="Tokens\CommentToken.cs" />
+    <Compile Include="Tokens\IdentifierToken.cs" />
+    <Compile Include="Tokens\CharLiteralToken.cs" />
+    <Compile Include="Tokens\StringLiteralToken.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ParserGenerator\ParserGenerator.csproj">
+      <Project>{34637fe2-115a-4977-92fd-59455d56190e}</Project>
+      <Name>ParserGenerator</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

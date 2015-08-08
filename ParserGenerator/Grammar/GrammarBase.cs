@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
-    public abstract partial class Grammar<Terminal_T, Nonterminal_T>
+    public abstract partial class GrammarBase<Terminal_T, Nonterminal_T>
         where Terminal_T: struct, IComparable, IConvertible
         where Nonterminal_T: struct, IComparable, IConvertible
     {
@@ -17,7 +17,7 @@ namespace ParserGenerator
         public Nonterminal_T Init { get; }
         public Nonterminal_T Start { get; }
 
-        protected Grammar(Terminal_T unknown, Terminal_T eof, Nonterminal_T init, Nonterminal_T start)
+        protected GrammarBase(Terminal_T unknown, Terminal_T eof, Nonterminal_T init, Nonterminal_T start)
         {
             Unknown = unknown;
             Eof = eof;

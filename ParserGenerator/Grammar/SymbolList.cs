@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ParserGenerator
 {
-    public abstract partial class Grammar<Terminal_T, Nonterminal_T>
+    public abstract partial class GrammarBase<Terminal_T, Nonterminal_T>
     {
         internal class SymbolList : List<Symbol>
         {
