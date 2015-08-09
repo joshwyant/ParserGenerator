@@ -19,6 +19,42 @@ namespace ParserGenerator
             return nodes.SelectMany(n => n.Flatten());
         }
 
+        public static GrammarBase<Terminal_T, Nonterminal_T>.AstNode
+            Search<Terminal_T, Nonterminal_T>
+            (this IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.AstNode> nodes, GrammarBase<Terminal_T, Nonterminal_T>.Symbol sym, int start = 0)
+            where Terminal_T : struct, IComparable, IConvertible
+            where Nonterminal_T : struct, IComparable, IConvertible
+        {
+            return nodes.Skip(start).Select(n => n.Search(sym)).FirstOrDefault();
+        }
+
+        public static GrammarBase<Terminal_T, Nonterminal_T>.AstNode
+            Search<Terminal_T, Nonterminal_T>
+            (this IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.AstNode> nodes, int start = 0, params GrammarBase<Terminal_T, Nonterminal_T>.Symbol[] syms)
+            where Terminal_T : struct, IComparable, IConvertible
+            where Nonterminal_T : struct, IComparable, IConvertible
+        {
+            return nodes.Skip(start).Select(n => n.Search(syms)).FirstOrDefault();
+        }
+
+        public static GrammarBase<Terminal_T, Nonterminal_T>.AstNode
+            Search<Terminal_T, Nonterminal_T>
+            (this IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.AstNode> nodes, params GrammarBase<Terminal_T, Nonterminal_T>.Symbol[] syms)
+            where Terminal_T : struct, IComparable, IConvertible
+            where Nonterminal_T : struct, IComparable, IConvertible
+        {
+            return nodes.Search(0, syms);
+        }
+
+        public static IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.AstNode>
+            SearchAll<Terminal_T, Nonterminal_T>
+            (this IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.AstNode> nodes, GrammarBase<Terminal_T, Nonterminal_T>.Symbol sym, int start = 0)
+            where Terminal_T : struct, IComparable, IConvertible
+            where Nonterminal_T : struct, IComparable, IConvertible
+        {
+            return nodes.Skip(start).SelectMany(n => n.SearchAll(sym));
+        }
+
         public static IEnumerable<string>
             AsLexemes<Terminal_T, Nonterminal_T>
             (this IEnumerable<GrammarBase<Terminal_T, Nonterminal_T>.Token> tokens)

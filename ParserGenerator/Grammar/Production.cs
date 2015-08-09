@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ParserGenerator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,6 +43,30 @@ namespace ParserGenerator
                     throw new InvalidOperationException();
 
                 list.Add(new ProductionRule(this, symbols));
+                return this;
+            }
+
+            public Production AsAny(params Symbol[] symbols)
+            {
+                if (list.Count != 0)
+                    throw new InvalidOperationException();
+
+                foreach (var symbol in symbols)
+                {
+                    list.Add(new ProductionRule(this, symbol.Yield()));
+                }
+                return this;
+            }
+
+            public Production OrAny(params Symbol[] symbols)
+            {
+                if (list.Count == 0)
+                    throw new InvalidOperationException();
+
+                foreach (var symbol in symbols)
+                {
+                    list.Add(new ProductionRule(this, symbol.Yield()));
+                }
                 return this;
             }
 

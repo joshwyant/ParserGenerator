@@ -21,11 +21,19 @@ namespace ParserGenerator
             public AstNode(Symbol s, AstNode[] children)
                 : this(s)
             {
-                Children = children;
+                Children = children ?? new AstNode[0];
             }
 
             public Symbol Symbol { get; }
-            public AstNode[] Children { get; set; }
+            public AstNode[] Children { get; }
+
+            public bool IsEmpty
+            {
+                get
+                {
+                    return !Symbol.IsTerminal && Children.Length == 0;
+                }
+            }
 
             public override string ToString()
             {

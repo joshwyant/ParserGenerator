@@ -14,33 +14,108 @@ namespace TestLanguage
                 .As(CompileUnit);
 
             DefineProduction (CompileUnit)
-                .As(UsingDirectivesOptional, NamespaceDeclarationsOptional);
-
-            DefineProduction (UsingDirectivesOptional)
-                .As(UsingDirectives)
-                .Optional();
+                .As(UsingDirectives, TypeOrNamespaceDeclarations);
 
             DefineProduction (UsingDirectives)
                 .As(UsingDirectives, UsingDirective)
-                .Or(UsingDirective);
+                .Or(UsingDirective)
+                .Optional();
 
             DefineProduction (UsingDirective)
-                .As(Using, FullyQualifiedNamespace, Semicolon);
+                .As(Using, FullyQualifiedNamespace, Semicolon); // Expand later to include aliases
 
             DefineProduction(FullyQualifiedNamespace)
                 .As(FullyQualifiedNamespace, Dot, Identifier)
                 .Or(Identifier);
 
-            DefineProduction(NamespaceDeclarationsOptional)
-                .As(NamespaceDeclarations)
+            DefineProduction(TypeOrNamespaceDeclarations)
+                .As(TypeOrNamespaceDeclarations, TypeOrNamespaceDeclaration)
+                .Or(TypeOrNamespaceDeclaration)
                 .Optional();
 
-            DefineProduction(NamespaceDeclarations)
-                .As(NamespaceDeclarations, NamespaceDeclaration)
+            DefineProduction(NamespaceDeclaration)
+                .As(Namespace, FullyQualifiedNamespace, LeftCurlyBrace, NamespaceBody, RightCurlyBrace);
+
+            DefineProduction(NamespaceBody)
+                .As(UsingDirectives, TypeOrNamespaceDeclarations);
+
+            DefineProduction(TypeOrNamespaceDeclaration)
+                .As(MemberSpecifiers, TypeDeclaration)
                 .Or(NamespaceDeclaration);
 
-            DefineProduction(NamespaceDeclaration)
-                .As(Namespace, FullyQualifiedNamespace, LeftCurlyBrace, CompileUnit, RightCurlyBrace);
+            DefineProduction(TypeDeclaration)
+                .AsAny(ClassDeclaration); // To be expanded to structs, enums, etc. later
+
+            DefineProduction(ClassDeclaration)
+                .As(Class, SimpleTypeName, Inheritance, LeftCurlyBrace, ClassBody, RightCurlyBrace);
+
+            DefineProduction(MemberSpecifiers)
+                .As(MemberSpecifiers, MemberSpecifier)
+                .Or(MemberSpecifier)
+                .Optional();
+
+            DefineProduction(MemberSpecifier)
+                //.AsAny(AccessSpecifier); // Add the others (sealed, etc.) later
+
+            //DefineProduction(AccessSpecifier)
+                .AsAny(Public, Private, Protected, Internal, Static, Abstract);
+
+            DefineProduction(SimpleTypeName)
+                .As(Identifier, TypeArgumentList);
+
+            DefineProduction(TypeArgumentList)
+                .As(LessThan, TypeArguments, GreaterThan)
+                .Optional();
+
+            DefineProduction(TypeArguments)
+                .As(TypeArguments, Comma, TypeName)
+                .Or(TypeName);
+
+            DefineProduction(TypeName)
+                .As(TypeName, Dot, SimpleTypeName)
+                .Or(SimpleTypeName)
+                .OrAny(Terminal.Object, Terminal.Void, Terminal.Byte, Terminal.Bool, 
+                    Terminal.Char, Terminal.String, Terminal.Short, Terminal.UShort, 
+                    Int, UInt, Long, ULong, Float, Terminal.Double, Terminal.Decimal);
+
+            DefineProduction(Inheritance)
+                .As(Colon, InheritanceTypes)
+                .Optional();
+
+            DefineProduction(InheritanceTypes)
+                .As(InheritanceTypes, Comma, TypeName)
+                .Or(TypeName)
+                .Optional();
+
+            DefineProduction(ClassBody)
+                .As(MemberDeclarations);
+
+            DefineProduction(MemberDeclarations)
+                .As(MemberDeclarations, MemberDeclaration)
+                .Or(MemberDeclaration)
+                .Optional();
+
+            DefineProduction(MemberDeclaration)
+                .As(MemberSpecifiers, ClassDeclaration) // Expand later (fields, properties, nested classes, etc.)
+                .Or(MemberSpecifiers, MethodDeclaration);
+
+            DefineProduction(MethodDeclaration)
+                .As(TypeName, Identifier, TypeArgumentList, LeftParenthesis, ParameterDefinitions, RightParenthesis, MethodBody);
+
+            DefineProduction(ParameterDefinitions)
+                .As(ParameterDefinitions, Comma, ParameterDefinition)
+                .Or(ParameterDefinition)
+                .Optional();
+
+            DefineProduction(ParameterDefinition)
+                .As(TypeName, Identifier);
+
+            DefineProduction(MethodBody)
+                .As(LeftCurlyBrace, MethodBodyInternal, RightCurlyBrace)
+                .Or(Semicolon);
+
+            DefineProduction(MethodBodyInternal)
+                .Optional(); // To expand later
         }
     }
 }

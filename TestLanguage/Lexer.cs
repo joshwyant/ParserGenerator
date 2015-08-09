@@ -33,6 +33,7 @@ namespace TestLanguage
                 { "throw", Throw }, { "new", New }, { "typeof", Typeof }, { "goto", Goto }, { "return", Return },
                 { "virtual", Virtual }, { "interface", Interface }, { "delegate", Terminal.Delegate },
                 { "if", If }, { "else", Else }, { "enum", Terminal.Enum }, { "lock", Lock }, { "var", Var },
+                { "internal", Internal }, { "abstract", Abstract }
             };
 
             public Lexer(TextReader reader) : base(reader) { }
@@ -557,8 +558,8 @@ namespace TestLanguage
                         Reader.Peek() == '+' ||
                         Reader.Peek() == '-' ||
                         Reader.Peek() == '=' ||
-                        Reader.Peek() == '<' ||
-                        Reader.Peek() == '>') // Slash is handled differently
+                        Reader.Peek() == '<' /*||
+                        Reader.Peek() == '>'*/) // Slash is handled differently
                     {
                         var c = read();
                         var doubled = false;
@@ -656,6 +657,9 @@ namespace TestLanguage
                                 break;
                             case ')':
                                 yield return makeToken(RightParenthesis);
+                                break;
+                            case '>':
+                                yield return makeToken(GreaterThan);
                                 break;
                             case '{':
                                 yield return makeToken(LeftCurlyBrace);

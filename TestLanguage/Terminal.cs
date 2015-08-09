@@ -87,6 +87,8 @@ namespace TestLanguage
         Private,
         Protected,
         Static,
+        Abstract,
+        Internal,
         Class,
         Struct,
         For,

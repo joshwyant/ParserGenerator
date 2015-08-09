@@ -14,6 +14,19 @@ namespace TestLanguage.Tests
     [TestFixture]
     public class LanguageTests
     {
+        Grammar grammar;
+
+        [SetUp]
+        public void Init()
+        {
+            grammar = new Grammar();
+        }
+
+        Grammar.Parser getParser(string str)
+        {
+            return grammar.GetParser(new StringReader(str));
+        }
+
         [Test]
         public void Language_DoesProduceCorrectTokens()
         {
@@ -47,11 +60,7 @@ namespace TestLanguage.Tests
         [Test]
         public void Language_Namespaces()
         {
-            string test;
-            var grammar = new Grammar();
-            Func<string, Grammar.Parser> getParser = str => grammar.GetParser(new StringReader(str));
-
-            test = @"
+            string test = @"
 using System;
 using System.Collections.Generic;
 
@@ -87,6 +96,58 @@ namespace B.C {}";
                 ns[1].Search(FullyQualifiedNamespace).SearchAll(Identifier).AsLexemes(),
                 Is.EquivalentTo(new[] { "B", "C" })
             );
+        }
+
+        [Test]
+        public void Language_Classes()
+        {
+            string test = @"
+namespace ABC {
+    public class A {
+        static class AB<T<S,R>> : b { }
+    }
+
+    class b : List<int> {
+        
+    }
+}
+class inRootNamespace{}";
+            var p = getParser(test);
+            var ast = p.Parse();
+
+            Assert.That(p.HasErrors, Is.False);
+
+            var classes = ast.SearchAll(ClassDeclaration).ToArray();
+
+            Assert.That(classes.Length, Is.EqualTo(3));
+
+            Assert.That(classes[0].Search(Inheritance).IsEmpty, Is.True);
+            Assert.That(classes[1].Search(Inheritance).IsEmpty, Is.False);
+            Assert.That(classes[1].Search(Inheritance).Search(TypeName).AsLexemes(), Is.EquivalentTo(new[] { "List", "<", "int", ">" }));
+
+            var nestedClass = classes[0].Search(ClassBody).Search(ClassDeclaration);
+            Assert.That(nestedClass, Is.Not.Null);
+            Assert.That(nestedClass.Search(SimpleTypeName).AsLexemes().First(), Is.EqualTo("AB"));
+            Assert.That(nestedClass.Search(TypeArgumentList).IsEmpty, Is.False);
+            Assert.That(nestedClass.Search(Inheritance).Search(TypeName).AsLexemes().Single(), Is.EqualTo("b"));
+        }
+
+        [Test]
+        public void Language_ClassMembers()
+        {
+            string test = @"
+namespace ns {
+  class c {
+    int main(string args, int count) { }
+    public abstract void DoSomething<T<S,R>>();
+  }
+}";
+
+            var p = getParser(test);
+            var ast = p.Parse();
+
+            Assert.That(p.HasErrors, Is.False);
+            
         }
     }
 }
