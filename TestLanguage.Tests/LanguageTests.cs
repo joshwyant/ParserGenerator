@@ -32,8 +32,7 @@ namespace TestLanguage.Tests
         {
             string test = null;
 
-            Func<Grammar.Token[]> testit = () =>
-                new Grammar.Lexer(new StringReader(test)).ToArray();
+            Grammar.Token[] testit() => new Grammar.Lexer(new StringReader(test)).ToArray();
 
             test = "using namespace @namespace;";
 
