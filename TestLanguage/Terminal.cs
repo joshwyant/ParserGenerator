@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TestLanguage
+﻿namespace TestLanguage
 {
     public enum Terminal
     {
@@ -116,6 +110,6 @@ namespace TestLanguage
         Enum,
         Lock,
         Var,
-        Eof,
+        Eof
     }
 }

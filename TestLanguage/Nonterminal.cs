@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TestLanguage
+﻿namespace TestLanguage
 {
     public enum Nonterminal
     {
@@ -37,6 +31,6 @@ namespace TestLanguage
         ParameterDefinitions,
         ParameterDefinition,
         MethodBody,
-        MethodBodyInternal,
+        MethodBodyInternal
     }
 }

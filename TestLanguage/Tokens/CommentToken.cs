@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ParserGenerator;
 
 namespace TestLanguage
 {
-    public class CommentToken : Grammar.Token
+    public class CommentToken : GrammarBase<Terminal, Nonterminal>.Token
     {
         public bool IsMultiline { get; }
         public bool IsClosedProperly { get; }

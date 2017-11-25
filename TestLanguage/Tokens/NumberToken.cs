@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ParserGenerator;
 
 namespace TestLanguage
 {
-    public class NumberToken : Grammar.Token
+    public class NumberToken : GrammarBase<Terminal, Nonterminal>.Token
     {
         public bool IsHexadecimal { get; }
         public bool IsUnsigned { get; }

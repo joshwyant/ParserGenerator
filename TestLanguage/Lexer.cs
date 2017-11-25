@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Linq;
-using ParserGenerator;
-using static TestLanguage.Terminal;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using static TestLanguage.Terminal;
 
 namespace TestLanguage
 {
@@ -53,7 +52,7 @@ namespace TestLanguage
                     lexemeBuilder.Append(c);
                     return c;
                 }
-                else return '\xFFFF';
+                return '\xFFFF';
             }
 
             protected override IEnumerable<Token> Lex()
@@ -64,8 +63,8 @@ namespace TestLanguage
             private IEnumerable<Token> LexWithoutTrivia()
             {
                 return LexAll().Where(t => 
-                    t.Terminal != Terminal.Whitespace && 
-                    t.Terminal != Terminal.Comment
+                    t.Terminal != Whitespace && 
+                    t.Terminal != Comment
                 );
             }
 
@@ -284,15 +283,12 @@ namespace TestLanguage
                                 continue;
                             }
                             // If this is not a hexadecimal number but it just starts with 0, scan the rest of the integer part of the number.
-                            else
-                            {
-                                // Add the '0' to the number part because this is not a hexadecimal number.
-                                numberPart.Append('0');
+                            // Add the '0' to the number part because this is not a hexadecimal number.
+                            numberPart.Append('0');
 
-                                while (Reader.HasNext() && (Reader.Peek() >= '0' && Reader.Peek() <= '9'))
-                                {
-                                    numberPart.Append(read());
-                                }
+                            while (Reader.HasNext() && (Reader.Peek() >= '0' && Reader.Peek() <= '9'))
+                            {
+                                numberPart.Append(read());
                             }
                         }
 

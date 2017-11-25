@@ -74,9 +74,9 @@ namespace TestLanguage
             DefineProduction(TypeName)
                 .As(TypeName, Dot, SimpleTypeName)
                 .Or(SimpleTypeName)
-                .OrAny(Terminal.Object, Terminal.Void, Terminal.Byte, Terminal.Bool, 
-                    Terminal.Char, Terminal.String, Terminal.Short, Terminal.UShort, 
-                    Int, UInt, Long, ULong, Float, Terminal.Double, Terminal.Decimal);
+                .OrAny(Object, Void, Byte, Bool, 
+                    Char, String, Short, UShort, 
+                    Int, UInt, Long, ULong, Float, Double, Decimal);
 
             DefineProduction(Inheritance)
                 .As(Colon, InheritanceTypes)

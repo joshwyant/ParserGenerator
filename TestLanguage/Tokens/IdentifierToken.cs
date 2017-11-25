@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ParserGenerator;
 
 namespace TestLanguage
 {
-    public class IdentifierToken : Grammar.Token
+    public class IdentifierToken : GrammarBase<Terminal, Nonterminal>.Token
     {
         public string Name { get; }
 
