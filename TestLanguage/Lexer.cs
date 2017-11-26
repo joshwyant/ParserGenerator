@@ -554,8 +554,8 @@ namespace TestLanguage
                         Reader.Peek() == '+' ||
                         Reader.Peek() == '-' ||
                         Reader.Peek() == '=' ||
-                        Reader.Peek() == '<' /*||
-                        Reader.Peek() == '>'*/) // Slash is handled differently
+                        Reader.Peek() == '<' ||
+                        Reader.Peek() == '>')
                     {
                         var c = read();
                         var doubled = false;
@@ -616,9 +616,9 @@ namespace TestLanguage
                             case '<':
                                 yield return makeToken(doubled ? ShiftLeft : equalsSign ? LessThanOrEqual : LessThan);
                                 break;
-                            //case '>':
-                            //    yield return makeToken(doubled ? ShiftRight : equalsSign ? GreaterThanOrEqual : GreaterThan);
-                            //    break;
+                            case '>':
+                                yield return makeToken(equalsSign ? GreaterThanOrEqual : GreaterThan);
+                                break;
                             case '!':
                                 yield return makeToken(equalsSign ? NotEqual : Not);
                                 break;
