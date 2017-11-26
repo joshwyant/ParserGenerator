@@ -61,6 +61,13 @@ namespace ParserGenerator
         #endregion
         
         #region Protected Internal Methods
+        /// <summary>
+        /// The LR0 Closure is the set of all the potential items we can expect to look for in the future at this state.
+        /// 
+        /// Page 245
+        /// </summary>
+        /// <param name="items">The items that represents a subset of the LR0 Closure to complete.</param>
+        /// <returns>The completed LR0 closure.</returns>
         protected internal LRItemSet LR0Closure(LRItemSet items)
         {
             // Initialize the return set to the item set
@@ -99,6 +106,14 @@ namespace ParserGenerator
 
             return newset;
         }
+        /// <summary>
+        /// Gives item sets for the given state, which are the additional states with the marker advanced
+        /// past the given symbol. Represents the LR0 GOTO set for the given state and symbol, which is a new state
+        /// that occurs when the marker advances over the given symbol.
+        /// </summary>
+        /// <param name="items">The items set which represents a state.</param>
+        /// <param name="s">The symbol to advance the marker past.</param>
+        /// <returns>Returns the LR0 Goto set, if any.</returns>
         protected internal LRItemSet LR0Goto(LRItemSet items, Symbol s)
         {
             return LR0Closure(
@@ -109,6 +124,10 @@ namespace ParserGenerator
                 )
             );
         }
+        
+        /// <summary>
+        /// Computes the LR0 item set collection, which is the closure of the start state, and all GOTO transitions.
+        /// </summary>
         protected internal LRItemSetCollection ComputeLR0ItemSetCollection()
         {
             // Here's our big collection of item sets
@@ -143,7 +162,6 @@ namespace ParserGenerator
                         // If there are any gotos...
                         if (@goto.Any())
                         {
-
                             // We're going to add this itemset.
                             if (!states.Contains(@goto))
                             {
@@ -164,6 +182,12 @@ namespace ParserGenerator
 
             return states;
         }
+        
+        /// <summary>
+        /// Gives us the lookup table for determining the next state once we have gobbled up a symbol.
+        /// </summary>
+        /// <param name="collection">The precomputed list of all the item sets.</param>
+        /// <returns>A collection that returns a new state given a current state and a transition symbol.</returns>
         protected internal Dictionary<Tuple<int, Symbol>, int> ComputeLR0GotoLookup(LRItemSetCollection collection)
         {
             var gotos = new Dictionary<Tuple<int, Symbol>, int>();
@@ -186,14 +210,11 @@ namespace ParserGenerator
                         if (!gotos.ContainsKey(key))
                         {
                             // Match the dynamic goto with an actual state in our collection.
-                            LRItemSet existingGoto = null;
-
-                            if (stateLookup.TryGetValue(@goto, out existingGoto))
+                            if (stateLookup.TryGetValue(@goto, out var existingGoto))
                             {
                                 // Add the goto from state <itemset> to state <existingGoto> to the lookup for the Goto function.
-                                gotos[key] = existingGoto.Index;
+                                gotos.Add(key, existingGoto.Index);
                             }
-
                         }
                     }
                 }

@@ -94,13 +94,14 @@ namespace ParserGenerator
         {
             var collection = ComputeLR0ItemSetCollection();
 
-            // Must do this before removing the nonkernals.
+            // Must do this before removing the nonkernels.
             var gotoSymbol = ComputeLR0GotoLookup(collection);
 
             collection.RemoveNonkernels();
             var itemLookup = collection.ToDictionary(c => c);
 
             // Determine propagation of lookaheads, and initialze lookaheads based on spontaneous generation
+            // (page 270-275, dragon book 2nd ed.)
             collection.StartState.Single().Lookaheads.Add(Eof);
             var rulePropagations = new Dictionary<Tuple<int, LRItem>, HashSet<Tuple<int, LRItem>>>();
 

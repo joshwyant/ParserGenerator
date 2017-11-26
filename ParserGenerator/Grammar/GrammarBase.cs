@@ -162,6 +162,11 @@ namespace ParserGenerator
             .SelectMany(s => First[s])
             .Distinct();
         }
+        
+        /// <summary>
+        /// Stores each rule of each production as an index into the indexedProductions list, and assigns
+        /// each rule an integer index.
+        /// </summary>
         protected internal void FlattenProductions()
         {
             if (indexedProductions != null)
@@ -184,6 +189,7 @@ namespace ParserGenerator
         #endregion
         
         #region Private Methods
+        // Adapted version of algorithm on page 220 of dragon book 2nd ed.
         private void ComputeFirstAndFollows()
         {
             // Get terminals and nonterminals from enumerations

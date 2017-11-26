@@ -21,7 +21,8 @@ namespace ParserGenerator
 
             public void RemoveNonkernels()
             {
-                RemoveWhere(i => !i.IsKernel);
+                // HashSet<> methods:
+                RemoveWhere(i => !i.IsKernel); // Remove items with the marker on the left (except start symbol)
                 TrimExcess(); // The whole point of removing the nonkernels is to save memory.
             }
 

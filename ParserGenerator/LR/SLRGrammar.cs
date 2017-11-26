@@ -55,6 +55,10 @@ namespace ParserGenerator
             return ComputeLR0ItemSetCollection();
         }
 
+        /// <summary>
+        /// Page 253, algorithm 4.46, dragon book 2nd ed.
+        /// </summary>
+        /// <returns></returns>
         protected override ParsingTable ComputeParseTable()
         {
             var table = new ParsingTable();
@@ -73,8 +77,7 @@ namespace ParserGenerator
                             // Preferring shift over reduce here (though undefined for SLR)
                             if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(sym))
                             {
-                                int @goto;
-                                if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out @goto))
+                                if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
                                 {
                                     table.Action[key] = new Action(Shift, @goto);
                                 }
@@ -95,8 +98,7 @@ namespace ParserGenerator
                     }
                     else // Nonterminal
                     {
-                        int @goto;
-                        if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out @goto))
+                        if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
                         {
                             table.Goto[new Tuple<int, Nonterminal_T>(state.Index, sym.Nonterminal)] = @goto;
                         }
