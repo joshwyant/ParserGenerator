@@ -84,8 +84,7 @@ namespace TestLanguage
 
             DefineProduction(InheritanceTypes)
                 .As(InheritanceTypes, Comma, TypeName)
-                .Or(TypeName)
-                .Optional();
+                .Or(TypeName);
 
             DefineProduction(ClassBody)
                 .As(MemberDeclarations);
