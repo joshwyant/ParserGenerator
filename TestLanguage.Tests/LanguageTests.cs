@@ -128,6 +128,7 @@ class inRootNamespace{}";
             Assert.That(nestedClass, Is.Not.Null);
             Assert.That(nestedClass.Search(SimpleTypeName).AsLexemes().First(), Is.EqualTo("AB"));
             Assert.That(nestedClass.Search(TypeArgumentList).IsEmpty, Is.False);
+            Assert.That(nestedClass.Search(TypeArgumentList).AsLexemes(), Is.EquivalentTo(new[] { "<", "T", "<", "S", ",", "R", ">", ">" }));
             Assert.That(nestedClass.Search(Inheritance).Search(TypeName).AsLexemes().Single(), Is.EqualTo("b"));
         }
 
