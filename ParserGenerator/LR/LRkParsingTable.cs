@@ -27,7 +27,9 @@ namespace ParserGenerator
                     {
                         bw.Write(action.Key.Item1);
                         bw.Write(action.Key.Item2.ToInt32(CultureInfo.InvariantCulture));
-                        bw.Write(((uint)action.Value.Type << 30) | (uint)action.Value.Number);
+                        bw.Write(((uint)action.Value.Type << 30) | (uint)action.Value.Numbers.Count);
+                        foreach (var n in action.Value.Numbers)
+                            bw.Write(n);
                     }
                     foreach (var @goto in Goto)
                     {
@@ -52,8 +54,8 @@ namespace ParserGenerator
                         var actionKey = new Tuple<int, Terminal_T>(actionState, actionTerminal);
                         var actionEncoded = br.ReadUInt32();
                         var actionType = (ActionType)(int)(actionEncoded >> 30);
-                        var actionNumber = (int)(actionEncoded & 0x3FFFFF);
-                        var action = new Action(actionType, actionNumber);
+                        var actionNumberCount = (int)(actionEncoded & 0x3FFFFF);
+                        var action = new Action(actionType, Enumerable.Range(0, actionNumberCount).Select(i => br.ReadInt32()));
                         Action.Add(actionKey, action);
                     }
                     while (gotoCount-- > 0)

@@ -14,6 +14,8 @@ namespace ParserGenerator
             public LRItemSet(IEnumerable<LRItem> items)
                 : base(items)
             { }
+            
+            public LRItemSet() { }
 
             public int Index { get; set; } = -1;
 
@@ -52,20 +54,21 @@ namespace ParserGenerator
                     || Kernels.Count() == Enumerable.Intersect(Kernels, t.Kernels).Count());
             }
 
-        
+            /// <summary>
+            /// Merges the given item set by adding items that don't yet exist,
+            /// and updating the lookaheads for existing items.
+            /// </summary>
+            /// <param name="set">The item set to merge into this set.</param>
+            /// <returns>Whether any items were added or any lookaheads were updated.</returns>
             public bool Merge(IEnumerable<LRItem> set)
             {
-                //if (!Equals(set))
-                //    throw new InvalidOperationException();
-
                 var added = false;
 
                 var mylookup = this.ToDictionary(i => i, i => i);
 
                 foreach (var item in set)
                 {
-                    LRItem myItem = null;
-                    if (mylookup.TryGetValue(item, out myItem))
+                    if (mylookup.TryGetValue(item, out var myItem))
                     {
                         if (myItem.Lookaheads.TryUnionWith(item.Lookaheads))
                             added = true;
@@ -73,8 +76,8 @@ namespace ParserGenerator
                     else
                     {
                         myItem = new LRItem(item.Rule, item.Marker, item.Lookaheads, item.IsKernel);
-                        mylookup[myItem] = myItem;
-                        this.Add(myItem);
+                        mylookup.Add(myItem, myItem);
+                        Add(myItem);
                         added = true;
                     }
                 }

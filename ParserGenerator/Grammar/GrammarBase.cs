@@ -26,7 +26,7 @@ namespace ParserGenerator
 
             var initProduction = DefineProduction(Init);
             var initRules = initProduction.Rules as List<ProductionRule>;
-            initRules.Add(new ProductionRule(initProduction, new Symbol(Start).Yield()));
+            initRules.Add(new ProductionRule(initProduction, new Symbol(Start).AsSingletonEnumerable()));
         }
 
         #region Public Properties
@@ -147,6 +147,13 @@ namespace ParserGenerator
         #endregion
 
         #region Protected Internal Methods
+        /// <summary>
+        /// Takes a string of symbols, and computes a new FIRST set. The string of symbols
+        /// may be taking into account lookahead, etc. which is not part of any production.
+        /// </summary>
+        /// <param name="symbols">The string of symbols.</param>
+        /// <returns>All the possible terminals that could appear first in a derivation of 
+        /// the given string of symbols.</returns>
         protected internal IEnumerable<Terminal_T> FirstOf(IEnumerable<Symbol> symbols)
         {
             bool prevWasNullable = true;
@@ -249,7 +256,7 @@ namespace ParserGenerator
                         {
                             var Yi = r.Symbols[i];
 
-                            // If everything in Y following i is nullable,
+                            // If everything in Y preceding i is nullable,
                             // then First[X] += First[Y[i]]
                             if (i == 0 || Yik.Take(i).All(sym => Nullable[sym]))
                             {
@@ -265,9 +272,10 @@ namespace ParserGenerator
                                     changed = true;
                             }
 
-                            // For each symbol in Y after Y[i]
+                            // For each symbol Y[j] in Y after Y[i]
                             // ...
                             // If everything in Y inbetween i and j are nullable,
+                            // or if j immediately follows i,
                             // then Follow[Y[i]] += First[Y[j]]
                             for (var j = i + 1; j < Yik.Count; j++)
                             {

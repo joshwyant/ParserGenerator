@@ -63,7 +63,7 @@ namespace ParserGenerator
             private IEnumerable<Token> FlattenToEnumerable()
             {
                 if (Symbol != null && Symbol.IsTerminal)
-                    return Symbol.Token.Yield();
+                    return Symbol.Token.AsSingletonEnumerable();
                 else
                     return Children.SelectMany(c => c.FlattenToEnumerable());
             }
@@ -121,6 +121,27 @@ namespace ParserGenerator
             public AstNode Search(params Symbol[] types)
             {
                 return Search(0, types);
+            }
+
+            int? hash;
+            public override int GetHashCode()
+            {
+                if (!hash.HasValue)
+                {
+                    hash = 17;
+                    hash = hash * 23 + Symbol.GetHashCode();
+                    foreach (var child in Children)
+                    {
+                        hash = hash * 23 + child.GetHashCode();
+                    }
+                }
+
+                return hash.Value;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is AstNode s && s.Symbol == Symbol && Children.SequenceEqual(s.Children);
             }
         }
 

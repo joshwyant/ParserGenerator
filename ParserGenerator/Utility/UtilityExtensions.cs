@@ -36,7 +36,7 @@ namespace ParserGenerator.Utility
             }
         }
 
-        public static IEnumerable<T> Yield<T>(this T item)
+        public static IEnumerable<T> AsSingletonEnumerable<T>(this T item)
         {
             yield return item;
         }

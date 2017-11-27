@@ -13,7 +13,7 @@ namespace ParserGenerator
             public ProductionRule Rule { get; }
             public int Marker { get; }
             public bool IsKernel { get; }
-            public int Length { get { return Rule.Length; } }
+            public int Length => Rule.Length;
             public HashSet<Terminal_T> Lookaheads { get; }
 
             public LRItem(ProductionRule rule, int marker, IEnumerable<Terminal_T> lookaheads = null, bool? isKernel = null)
@@ -40,13 +40,7 @@ namespace ParserGenerator
             {
                 var t = obj as LRItem;
 
-                if (t == null)
-                    return false;
-
-                if (t.Marker != Marker)
-                    return false;
-
-                return (object.ReferenceEquals(Rule, t.Rule));
+                return t?.Marker == Marker && ReferenceEquals(Rule, t.Rule);
             }
 
             public override string ToString()

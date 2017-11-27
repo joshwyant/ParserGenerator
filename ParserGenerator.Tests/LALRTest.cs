@@ -65,9 +65,9 @@ namespace ParserGenerator.Tests
                 //return new LRItemSetCollection()
                 //{
                 // I0: S' -> . S
-                var rule0 = new LRItemSet(new LRItem(init.Rules.Single(), 0, isKernel: true).Yield());
+                var rule0 = new LRItemSet(new LRItem(init.Rules.Single(), 0, isKernel: true).AsSingletonEnumerable());
                 // I1: S' -> S .
-                var rule1 = new LRItemSet(new LRItem(init.Rules.Single(), 1).Yield());
+                var rule1 = new LRItemSet(new LRItem(init.Rules.Single(), 1).AsSingletonEnumerable());
                 // I2: S -> L . = R
                 //     R -> L .
                 var rule2 = new LRItemSet(new[] {

@@ -18,6 +18,11 @@ namespace ParserGenerator
             public LRParser(LRkGrammar<Terminal_T, Nonterminal_T> g, LexerBase l)
                 : base(g, l) { }
 
+            public AstNode ParseGLR()
+            {
+                throw new NotImplementedException();
+            }
+            
             public override AstNode Parse()
             {
                 var grammar = Grammar as LRkGrammar<Terminal_T, Nonterminal_T>;
@@ -34,10 +39,8 @@ namespace ParserGenerator
                     bool reduced;
                     do {
                         reduced = false;
-                
-                        Action action = null;
-    
-                        table.Action.TryGetValue(new Tuple<int, Terminal_T>(currentState, t.Terminal), out action);
+
+                        table.Action.TryGetValue(new Tuple<int, Terminal_T>(currentState, t.Terminal), out var action);
                     
                         // Get the action type. If action is null, default to the 'Error' action
                         switch (action?.Type ?? Error)

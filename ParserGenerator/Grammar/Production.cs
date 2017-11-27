@@ -53,7 +53,7 @@ namespace ParserGenerator
 
                 foreach (var symbol in symbols)
                 {
-                    list.Add(new ProductionRule(this, symbol.Yield()));
+                    list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
                 }
                 return this;
             }
@@ -65,7 +65,7 @@ namespace ParserGenerator
 
                 foreach (var symbol in symbols)
                 {
-                    list.Add(new ProductionRule(this, symbol.Yield()));
+                    list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
                 }
                 return this;
             }
