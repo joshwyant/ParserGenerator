@@ -26,13 +26,15 @@ namespace ParserGenerator.Utility
 
         public static void CopyToArray<T>(this IEnumerable<T> enumerable, T[] array)
         {
-            var enumerator = enumerable.GetEnumerator();
-            for (var i = 0; i < array.Length; i++)
+            using (var enumerator = enumerable.GetEnumerator())
             {
-                if (!enumerator.MoveNext())
-                    break;
+                for (var i = 0; i < array.Length; i++)
+                {
+                    if (!enumerator.MoveNext())
+                        break;
 
-                array[i] = enumerator.Current;
+                    array[i] = enumerator.Current;
+                }
             }
         }
 
