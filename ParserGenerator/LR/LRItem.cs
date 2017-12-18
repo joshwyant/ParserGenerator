@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -24,16 +22,16 @@ namespace ParserGenerator
                 Lookaheads = new HashSet<Terminal_T>(lookaheads ?? Enumerable.Empty<Terminal_T>());
             }
 
-            int? hash;
+            private int? _hash;
             public override int GetHashCode()
             {
-                if (!hash.HasValue)
+                if (!_hash.HasValue)
                 {
-                    hash = 17;
-                    hash = 23 * hash + Marker;
-                    hash = 23 * hash + Rule.GetHashCode();
+                    _hash = 17;
+                    _hash = 23 * _hash + Marker;
+                    _hash = 23 * _hash + Rule.GetHashCode();
                 }
-                return hash.Value;
+                return _hash.Value;
             }
 
             public override bool Equals(object obj)
@@ -49,7 +47,7 @@ namespace ParserGenerator
             
                 for (var i = 0; i < Length; i++)
                 {
-                    var marker = (i == Marker ? " *" : "");
+                    var marker = i == Marker ? " *" : "";
 
                     sb.Append($"{marker} {Rule.Symbols[i]}");
                 }

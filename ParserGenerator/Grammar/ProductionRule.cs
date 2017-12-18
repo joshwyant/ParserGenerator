@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -11,23 +8,22 @@ namespace ParserGenerator
         public class ProductionRule
         {
             public Production Production { get; }
-            public IReadOnlyList<Symbol> Symbols { get; }
-            public int Length { get { return Symbols.Count; } }
+            private readonly List<Symbol> _list;
+            public IReadOnlyList<Symbol> Symbols => _list;
+            public int Length => Symbols.Count;
             public bool IsAccepting { get; set; }
             public int Index { get; set; }
 
             internal ProductionRule(Production p, IEnumerable<Symbol> startingSymbols)
             {
                 Production = p;
-                Symbols = new SymbolList(startingSymbols);
+                _list = new SymbolList(startingSymbols);
             }
 
             public static ProductionRule operator/(ProductionRule r, Symbol s)
             {
-                var list = r.Symbols as List<Symbol>;
-
                 if (s != null)
-                    list.Add(s);
+                    r._list.Add(s);
 
                 r.RecalcHash();
                 return r;
@@ -35,29 +31,27 @@ namespace ParserGenerator
 
             public override int GetHashCode()
             {
-                if (!hash.HasValue)
+                if (!_hash.HasValue)
                     RecalcHash();
 
-                return hash.Value;
+                return _hash.Value;
             }
 
-            int? hash;
+            private int? _hash;
             private void RecalcHash()
             {
                 unchecked
                 {
-                    hash = 17;
-                    hash = hash * 23 + Production.Lhs.GetHashCode();
+                    _hash = 17;
+                    _hash = _hash * 23 + Production.Lhs.GetHashCode();
                     foreach (var sym in Symbols)
-                        hash = hash * 23 + sym.GetHashCode();
+                        _hash = _hash * 23 + sym.GetHashCode();
                 }
             }
 
             public override bool Equals(object obj)
             {
-                var r = obj as ProductionRule;
-
-                return (r != null && r.Production.Equals(Production) && r.Symbols.SequenceEqual(Symbols));
+                return obj is ProductionRule r && r.Production.Equals(Production) && r.Symbols.SequenceEqual(Symbols);
             }
 
             public override string ToString()

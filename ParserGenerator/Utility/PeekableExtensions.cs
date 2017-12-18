@@ -12,11 +12,11 @@ namespace ParserGenerator.Utility
 
         private class Peekable<T> : IPeekable<T>
         {
-            private IEnumerator<T> enumerator;
+            private readonly IEnumerator<T> _enumerator;
 
             public Peekable(IEnumerable<T> enumerable)
             {
-                enumerator = enumerable.GetEnumerator();
+                _enumerator = enumerable.GetEnumerator();
             }
 
             public IEnumerator<T> GetEnumerator()
@@ -27,91 +27,67 @@ namespace ParserGenerator.Utility
             public bool HasNext()
             {
                 Peek();
-                return hasPeek;
+                return _hasPeek;
             }
 
-            T peeked;
-            bool hasPeek;
+            private T _peeked;
+            private bool _hasPeek;
             public T Peek()
             {
-                if (!hasPeek)
+                if (!_hasPeek)
                 {
-                    peeked = Read();
-                    hasPeek = didMove;
+                    _peeked = Read();
+                    _hasPeek = _didMove;
                 }
 
-                return peeked;
+                return _peeked;
             }
 
-            T current;
-            bool didMove;
+            private T _current;
+            private bool _didMove;
             public T Read()
             {
-                didMove = true;
-                if (hasPeek)
+                _didMove = true;
+                if (_hasPeek)
                 {
-                    current = peeked;
+                    _current = _peeked;
                 }
                 else
                 {
-                    if (!enumerator.MoveNext())
-                        didMove = false;
+                    if (!_enumerator.MoveNext())
+                        _didMove = false;
 
-                    if (didMove)
-                        current = enumerator.Current;
-                    else
-                        current = default(T);
+                    _current = _didMove ? _enumerator.Current : default(T);
                 }
 
-                hasPeek = false;
-                return current;
+                _hasPeek = false;
+                return _current;
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-            public class Enumerator : IEnumerator<T>
+            private class Enumerator : IEnumerator<T>
             {
-                private Peekable<T> peekable;
+                private readonly Peekable<T> _peekable;
 
                 public Enumerator(Peekable<T> peekable)
                 {
-                    this.peekable = peekable;
+                    _peekable = peekable;
                 }
 
-                public T Current
-                {
-                    get
-                    {
-                        return peekable.current;
-                    }
-                }
+                public T Current => _peekable._current;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
-                public void Dispose()
-                {
-                    peekable.enumerator.Dispose();
-                }
+                public void Dispose() => _peekable._enumerator.Dispose();
 
                 public bool MoveNext()
                 {
-                    peekable.Read();
-                    return peekable.didMove;
+                    _peekable.Read();
+                    return _peekable._didMove;
                 }
 
-                public void Reset()
-                {
-                    peekable.enumerator.Reset();
-                }
+                public void Reset() => _peekable._enumerator.Reset();
             }
         }
     }

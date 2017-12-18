@@ -1,9 +1,6 @@
 ﻿using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ParserGenerator.Demo;
 using static ParserGenerator.Demo.Terminal;
 using static ParserGenerator.Demo.Nonterminal;
@@ -18,34 +15,34 @@ namespace ParserGenerator.Tests
         class LALRGrammar
             : LALRGrammar<Terminal, Nonterminal>
         {
-            Production init;
-            Production start;
-            Production access;
-            Production expression;
+            private readonly Production _init;
+            private readonly Production _start;
+            private readonly Production _access;
+            private readonly Production _expression;
 
             public LALRGrammar()
                 : base(Terminal.Unknown, Terminal.Eof, Nonterminal.Init, Nonterminal.Start)
             {
-                init = Productions.Values.Single(p => p.Lhs == Nonterminal.Init);
-                start = DefineProduction(Start);
-                access = DefineProduction(Access);
-                expression = DefineProduction(Expression);
+                _init = Productions.Values.Single(p => p.Lhs == Nonterminal.Init);
+                _start = DefineProduction(Start);
+                _access = DefineProduction(Access);
+                _expression = DefineProduction(Expression);
 
                 ProductionRule t;
 
-                t = start %
+                t = _start %
                     Access / Terminal.Equals / Expression;
-                t = start %
+                t = _start %
                     Expression;
-                t = access %
+                t = _access %
                     Star / Expression;
-                t = access %
+                t = _access %
                     Ident;
-                t = expression %
+                t = _expression %
                     Access;
             }
 
-            public class Lexer : LexerBase
+            private class Lexer : LexerBase
             {
                 public Lexer(TextReader reader) : base(reader) { }
 
@@ -65,20 +62,20 @@ namespace ParserGenerator.Tests
                 //return new LRItemSetCollection()
                 //{
                 // I0: S' -> . S
-                var rule0 = new LRItemSet(new LRItem(init.Rules.Single(), 0, isKernel: true).AsSingletonEnumerable());
+                var rule0 = new LRItemSet(new LRItem(_init.Rules.Single(), 0, isKernel: true).AsSingletonEnumerable());
                 // I1: S' -> S .
-                var rule1 = new LRItemSet(new LRItem(init.Rules.Single(), 1).AsSingletonEnumerable());
+                var rule1 = new LRItemSet(new LRItem(_init.Rules.Single(), 1).AsSingletonEnumerable());
                 // I2: S -> L . = R
                 //     R -> L .
                 var rule2 = new LRItemSet(new[] {
                     new LRItem(
-                        start.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _start.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Access), new Symbol(Terminal.Equals), new Symbol(Expression) }
                             )
                         ), 1
                     ),
                     new LRItem(
-                        expression.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _expression.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Access) }
                             )
                         ), 1
@@ -87,7 +84,7 @@ namespace ParserGenerator.Tests
                 // I3: S -> R .
                 var rule3 = new LRItemSet(new[] {
                     new LRItem(
-                        start.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _start.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Expression) }
                             )
                         ), 1
@@ -96,7 +93,7 @@ namespace ParserGenerator.Tests
                 // I4: L -> * . R
                 var rule4 = new LRItemSet(new[] {
                     new LRItem(
-                        access.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _access.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Star), new Symbol(Expression) }
                             )
                         ), 1
@@ -105,7 +102,7 @@ namespace ParserGenerator.Tests
                 // I5: L -> id .
                 var rule5 = new LRItemSet(new[] {
                     new LRItem(
-                        access.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _access.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Ident) }
                             )
                         ), 1
@@ -114,7 +111,7 @@ namespace ParserGenerator.Tests
                 // I6: S -> L = . R
                 var rule6 = new LRItemSet(new[] {
                     new LRItem(
-                        start.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _start.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Access), new Symbol(Terminal.Equals), new Symbol(Expression) }
                             )
                         ), 2
@@ -123,7 +120,7 @@ namespace ParserGenerator.Tests
                 // I7: L -> * R .
                 var rule7 = new LRItemSet(new[] {
                     new LRItem(
-                        access.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _access.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Star), new Symbol(Expression) }
                             )
                         ), 2
@@ -132,7 +129,7 @@ namespace ParserGenerator.Tests
                 // I8: R -> L .
                 var rule8 = new LRItemSet(new[] {
                     new LRItem(
-                        expression.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _expression.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Access) }
                             )
                         ), 1
@@ -141,7 +138,7 @@ namespace ParserGenerator.Tests
                 // I9: S -> L = R .
                 var rule9 = new LRItemSet(new[] {
                     new LRItem(
-                        start.Rules.Single(r => r.Symbols.SequenceEqual(
+                        _start.Rules.Single(r => r.Symbols.SequenceEqual(
                             new [] { new Symbol(Access), new Symbol(Terminal.Equals), new Symbol(Expression) }
                             )
                         ), 3
@@ -155,19 +152,19 @@ namespace ParserGenerator.Tests
             }
         }
 
-        LALRGrammar grammar;
+        private LALRGrammar _grammar;
 
         [SetUp]
         public void Init()
         {
-            grammar = new LALRGrammar();
+            _grammar = new LALRGrammar();
         }
 
         [Test]
         public void Grammar_DoesHaveCorrectStates()
         {
-            var kernels = new HashSet<LALRGrammar.LRItemSet>(grammar.MockKernels());
-            var states = new HashSet<LALRGrammar.LRItemSet>(grammar.States);
+            var kernels = new HashSet<LALRGrammar.LRItemSet>(_grammar.MockKernels());
+            var states = new HashSet<LALRGrammar.LRItemSet>(_grammar.States);
 
             var intersection = states.Intersect(kernels);
 

@@ -1,9 +1,6 @@
 ﻿using ParserGenerator.Utility;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -28,30 +25,28 @@ namespace ParserGenerator
                 TrimExcess(); // The whole point of removing the nonkernels is to save memory.
             }
 
-            int? hash;
+            private int? _hash;
             public override int GetHashCode()
             {
-                if (!hash.HasValue)
+                if (!_hash.HasValue)
                 {
-                    hash = 17;
+                    _hash = 17;
                     var count = 0;
                     foreach (var item in Kernels.OrderBy(i => i.GetHashCode()))
                     {
                         count++;
-                        hash = 23 * hash + item.GetHashCode();
+                        _hash = 23 * _hash + item.GetHashCode();
                     }
-                    hash = 23 * hash + count;
+                    _hash = 23 * _hash + count;
                 }
-                return hash.Value;
+                return _hash.Value;
             }
 
             public override bool Equals(object obj)
             {
-                var t = obj as LRItemSet;
-            
-                return t != null && 
+                return obj is LRItemSet t && 
                     (ReferenceEquals(this, obj)
-                    || Kernels.Count() == Enumerable.Intersect(Kernels, t.Kernels).Count());
+                    || Kernels.Count() == Kernels.Intersect(t.Kernels).Count());
             }
 
             /// <summary>

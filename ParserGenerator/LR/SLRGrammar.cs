@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ParserGenerator.ActionType;
 
 namespace ParserGenerator
@@ -61,8 +59,7 @@ namespace ParserGenerator
         /// <returns></returns>
         protected override ParsingTable ComputeParseTable()
         {
-            var table = new ParsingTable();
-            table.StartState = States.StartState.Index;
+            var table = new ParsingTable {StartState = States.StartState.Index};
 
             foreach (var state in States)
             {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ParserGenerator
+﻿namespace ParserGenerator
 {
     public abstract partial class GrammarBase<Terminal_T, Nonterminal_T>
     {
@@ -33,25 +27,23 @@ namespace ParserGenerator
                 Nonterminal = t;
             }
 
-            int? hash;
+            private int? _hash;
             public override int GetHashCode()
             {
-                if (!hash.HasValue)
+                if (!_hash.HasValue)
                 {
-                    hash = 17;
-                    hash = hash * 23 + IsTerminal.GetHashCode();
-                    hash = hash * 23 + Terminal.GetHashCode();
-                    hash = hash * 23 + Nonterminal.GetHashCode();
+                    _hash = 17;
+                    _hash = _hash * 23 + IsTerminal.GetHashCode();
+                    _hash = _hash * 23 + Terminal.GetHashCode();
+                    _hash = _hash * 23 + Nonterminal.GetHashCode();
                 }
 
-                return hash.Value;
+                return _hash.Value;
             }
 
             public override bool Equals(object obj)
             {
-                var s = obj as Symbol;
-
-                return s != null && s.IsTerminal == IsTerminal &&
+                return obj is Symbol s && s.IsTerminal == IsTerminal &&
                     (IsTerminal ?
                         s.Terminal.CompareTo(Terminal) == 0 : 
                         s.Nonterminal.CompareTo(Nonterminal) == 0);

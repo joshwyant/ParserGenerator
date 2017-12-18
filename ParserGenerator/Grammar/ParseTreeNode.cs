@@ -1,39 +1,30 @@
 ﻿using ParserGenerator.Utility;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
     public abstract partial class GrammarBase<Terminal_T, Nonterminal_T>
     {
-        public class AstNode
+        public class ParseTreeNode
         {
-            public AstNode(Symbol s)
+            public ParseTreeNode(Symbol s)
             {
                 Symbol = s;
-                Children = new AstNode[0];
+                Children = new ParseTreeNode[0];
             }
 
-            public AstNode(Symbol s, AstNode[] children)
+            public ParseTreeNode(Symbol s, ParseTreeNode[] children)
                 : this(s)
             {
-                Children = children ?? new AstNode[0];
+                Children = children ?? new ParseTreeNode[0];
             }
 
             public Symbol Symbol { get; }
-            public AstNode[] Children { get; }
+            public ParseTreeNode[] Children { get; }
 
-            public bool IsEmpty
-            {
-                get
-                {
-                    return !Symbol.IsTerminal && Children.Length == 0;
-                }
-            }
+            public bool IsEmpty => !Symbol.IsTerminal && Children.Length == 0;
 
             public override string ToString()
             {
@@ -54,7 +45,9 @@ namespace ParserGenerator
                     {
                         var c = Children[i];
                         if (i != 0)
+                        {
                             w.Write(" ");
+                        }
                         c.Print(w);
                     }
                 }
@@ -63,9 +56,11 @@ namespace ParserGenerator
             private IEnumerable<Token> FlattenToEnumerable()
             {
                 if (Symbol != null && Symbol.IsTerminal)
+                {
                     return Symbol.Token.AsSingletonEnumerable();
-                else
-                    return Children.SelectMany(c => c.FlattenToEnumerable());
+                }
+
+                return Children.SelectMany(c => c.FlattenToEnumerable());
             }
 
             public IPeekable<Token> Flatten()
@@ -73,35 +68,29 @@ namespace ParserGenerator
                 return FlattenToEnumerable().AsPeekable();
             }
 
-            public AstNode Search(int start, params Symbol[] types)
+            public ParseTreeNode Search(int start, params Symbol[] types)
             {
                 if (types.Contains(Symbol))
                     return this;
 
-                foreach (var c in Children.Skip(start))
-                {
-                    var found = c.Search(0, types);
-                    if (found != null)
-                        return found;
-                }
-                return null;
+                return Children
+                    .Skip(start)
+                    .Select(c => c.Search(0, types))
+                    .FirstOrDefault(found => found != null);
             }
 
-            public AstNode Search(Symbol type, int start = 0)
+            public ParseTreeNode Search(Symbol type, int start = 0)
             {
                 if (type.Equals(Symbol))
                     return this;
 
-                foreach (var c in Children.Skip(start))
-                {
-                    var found = c.Search(type, start);
-                    if (found != null)
-                        return found;
-                }
-                return null;
+                return Children
+                    .Skip(start)
+                    .Select(c => c.Search(type, start))
+                    .FirstOrDefault(found => found != null);
             }
 
-            public IEnumerable<AstNode> SearchAll(Symbol type, int start = 0)
+            public IEnumerable<ParseTreeNode> SearchAll(Symbol type, int start = 0)
             {
                 if (type.Equals(Symbol))
                 {
@@ -118,30 +107,27 @@ namespace ParserGenerator
                 }
             }
 
-            public AstNode Search(params Symbol[] types)
-            {
-                return Search(0, types);
-            }
+            public ParseTreeNode Search(params Symbol[] types) => Search(0, types);
 
-            int? hash;
+            private int? _hash;
             public override int GetHashCode()
             {
-                if (!hash.HasValue)
+                if (!_hash.HasValue)
                 {
-                    hash = 17;
-                    hash = hash * 23 + Symbol.GetHashCode();
+                    _hash = 17;
+                    _hash = _hash * 23 + Symbol.GetHashCode();
                     foreach (var child in Children)
                     {
-                        hash = hash * 23 + child.GetHashCode();
+                        _hash = _hash * 23 + child.GetHashCode();
                     }
                 }
 
-                return hash.Value;
+                return _hash.Value;
             }
 
             public override bool Equals(object obj)
             {
-                return obj is AstNode s && s.Symbol == Symbol && Children.SequenceEqual(s.Children);
+                return obj is ParseTreeNode s && s.Symbol == Symbol && Children.SequenceEqual(s.Children);
             }
         }
 

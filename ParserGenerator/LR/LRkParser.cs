@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ParserGenerator.ActionType;
-using System.Linq.Expressions;
 
 namespace ParserGenerator
 {
@@ -13,17 +9,17 @@ namespace ParserGenerator
     {
         public class LRParser : Parser
         {
-            Stack<Tuple<AstNode, int>> Stack { get; } = new Stack<Tuple<AstNode, int>>();
+            private Stack<Tuple<ParseTreeNode, int>> Stack { get; } = new Stack<Tuple<ParseTreeNode, int>>();
 
             public LRParser(LRkGrammar<Terminal_T, Nonterminal_T> g, LexerBase l)
                 : base(g, l) { }
 
-            public AstNode ParseGLR()
+            public ParseTreeNode ParseGLR()
             {
                 throw new NotImplementedException();
             }
             
-            public override AstNode Parse()
+            public override ParseTreeNode Parse()
             {
                 var grammar = Grammar as LRkGrammar<Terminal_T, Nonterminal_T>;
 
@@ -31,7 +27,7 @@ namespace ParserGenerator
                 var currentState = table.StartState;
 
                 // Push the start state onto the stack
-                Stack.Push(new Tuple<AstNode, int>(new AstNode(Grammar.Start), currentState));
+                Stack.Push(new Tuple<ParseTreeNode, int>(new ParseTreeNode(Grammar.Start), currentState));
 
                 foreach (var t in Lexer)
                 {
@@ -48,7 +44,7 @@ namespace ParserGenerator
                             case Shift:
                                 // Shift N
                                 currentState = action.Number;
-                                Stack.Push(new Tuple<AstNode, int>(new AstNode(t), currentState));
+                                Stack.Push(new Tuple<ParseTreeNode, int>(new ParseTreeNode(t), currentState));
                                 break;
                             case Reduce:
                                 // Reduce by rule N
@@ -56,14 +52,14 @@ namespace ParserGenerator
                                 var reduceLhs = rule.Production.Lhs;
     
                                 // Now create an array for the symbols:
-                                var symbols = new AstNode[rule.Length];
+                                var symbols = new ParseTreeNode[rule.Length];
     
                                 // Pop the thing off the stack
                                 for (var i = rule.Length - 1; i >= 0; i--)
                                     symbols[i] = Stack.Pop().Item1;
     
                                 // Create a new Ast node
-                                var reducedNode = new AstNode(reduceLhs, symbols);
+                                var reducedNode = new ParseTreeNode(reduceLhs, symbols);
                             
                                 // Get the state at the top of the stack
                                 var topState = Stack.Peek().Item2;
@@ -73,7 +69,7 @@ namespace ParserGenerator
                                 var newState = table.Goto[new Tuple<int, Nonterminal_T>(topState, reduceLhs)];
     
                                 // Push that onto the stack
-                                Stack.Push(new Tuple<AstNode, int>(reducedNode, newState));
+                                Stack.Push(new Tuple<ParseTreeNode, int>(reducedNode, newState));
     
                                 // Transition to the top state
                                 currentState = newState;
@@ -90,7 +86,7 @@ namespace ParserGenerator
     
                                 if (t.Terminal.CompareTo(Grammar.Eof) == 0)
                                     // Just return whatever's on the stack
-                                    return new AstNode(Grammar.Unknown, Stack.Skip(1).Select(s => s.Item1).ToArray());
+                                    return new ParseTreeNode(Grammar.Unknown, Stack.Skip(1).Select(s => s.Item1).ToArray());
     
                                 break;
                         }

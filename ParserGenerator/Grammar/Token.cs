@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ParserGenerator
+﻿namespace ParserGenerator
 {
     public abstract partial class GrammarBase<Terminal_T, Nonterminal_T>
     {

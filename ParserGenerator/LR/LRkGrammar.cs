@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -20,44 +18,25 @@ namespace ParserGenerator
         }
 
         #region Public Properties
-        public LRItemSetCollection States
-        {
-            get
-            {
-                if (states == null)
-                    states = ComputeItemSetCollection();
+        public LRItemSetCollection States => _states ?? (_states = ComputeItemSetCollection());
 
-                return states;
-            }
-        }
-        public Dictionary<Tuple<int, Symbol>, int> GotoSymbol
-        {
-            get
-            {
-                if (gotoSymbol == null)
-                    gotoSymbol = ComputeGotoLookup();
+        public Dictionary<Tuple<int, Symbol>, int> GotoSymbol => _gotoSymbol ?? (_gotoSymbol = ComputeGotoLookup());
 
-                return gotoSymbol;
-            }
-        }
         public ParsingTable ParseTable
         {
             get
             {
                 FlattenProductions();
 
-                if (parseTable == null)
-                    parseTable = ComputeParseTable();
-
-                return parseTable;
+                return _parseTable ?? (_parseTable = ComputeParseTable());
             }
         }
         #endregion
 
         #region Private Fields
-        private LRItemSetCollection states;
-        private ParsingTable parseTable;
-        private Dictionary<Tuple<int, Symbol>, int> gotoSymbol;
+        private LRItemSetCollection _states;
+        private ParsingTable _parseTable;
+        private Dictionary<Tuple<int, Symbol>, int> _gotoSymbol;
         #endregion
         
         #region Protected Internal Methods
@@ -71,7 +50,7 @@ namespace ParserGenerator
         protected internal LRItemSet LR0Closure(LRItemSet items)
         {
             // Initialize the return set to the item set
-            LRItemSet newset = new LRItemSet(items);
+            var newset = new LRItemSet(items);
 
             // Keep looping until no more items were added in this iteration
             bool changed;
@@ -79,22 +58,21 @@ namespace ParserGenerator
             {
                 changed = false;
                 var toAdd = new HashSet<LRItem>();
+                
                 // For each item in the set
                 foreach (var item in newset)
                 {
-                    if (item.Marker < item.Length)
+                    if (item.Marker >= item.Length) continue;
+                    
+                    var nextSymbol = item.Rule.Symbols[item.Marker];
+                    if (nextSymbol.IsTerminal) continue;
+                    
+                    // For each rule of the production past the marker for this item
+                    foreach (var rule in Productions[nextSymbol.Nonterminal].Rules)
                     {
-                        var nextSymbol = item.Rule.Symbols[item.Marker];
-                        if (!nextSymbol.IsTerminal)
-                        {
-                            // For each rule of the production past the marker for this item
-                            foreach (var rule in Productions[nextSymbol.Nonterminal].Rules)
-                            {
-                                // Create a new nonkernel item
-                                var newitem = new LRItem(rule, 0);
-                                toAdd.Add(newitem);
-                            }
-                        }
+                        // Create a new nonkernel item
+                        var newitem = new LRItem(rule, 0);
+                        toAdd.Add(newitem);
                     }
                 }
 
@@ -151,8 +129,6 @@ namespace ParserGenerator
                 // For each item set already in the collection...
                 foreach (var itemset in states)
                 {
-                    var lhs = itemset.Kernels.First().Rule.Production.Lhs;
-                    var marker = itemset.Kernels.First().Marker;
                     // For every grammar symbol...
                     foreach (var sym in Symbols)
                     {
@@ -160,15 +136,13 @@ namespace ParserGenerator
                         var @goto = LR0Goto(itemset, sym);
 
                         // If there are any gotos...
-                        if (@goto.Any())
-                        {
-                            // We're going to add this itemset.
-                            if (!states.Contains(@goto))
-                            {
-                                toAdd.Add(@goto);
-                                changed = true;
-                            }
-                        }
+                        if (!@goto.Any()) continue;
+                        
+                        // We're going to add this itemset.
+                        if (states.Contains(@goto)) continue;
+                        
+                        toAdd.Add(@goto);
+                        changed = true;
                     }
                 }
 
@@ -201,21 +175,16 @@ namespace ParserGenerator
                 {
                     // Calculate GOTO dynamically.
                     var @goto = LR0Goto(itemset, sym);
-
-                    // If there are any gotos...
-                    if (@goto.Any())
+                    if (!@goto.Any()) continue;
+                    
+                    var key = new Tuple<int, Symbol>(itemset.Index, sym);
+                    if (gotos.ContainsKey(key)) continue;
+                    
+                    // Match the dynamic goto with an actual state in our collection.
+                    if (stateLookup.TryGetValue(@goto, out var existingGoto))
                     {
-                        var key = new Tuple<int, Symbol>(itemset.Index, sym);
-
-                        if (!gotos.ContainsKey(key))
-                        {
-                            // Match the dynamic goto with an actual state in our collection.
-                            if (stateLookup.TryGetValue(@goto, out var existingGoto))
-                            {
-                                // Add the goto from state <itemset> to state <existingGoto> to the lookup for the Goto function.
-                                gotos.Add(key, existingGoto.Index);
-                            }
-                        }
+                        // Add the goto from state <itemset> to state <existingGoto> to the lookup for the Goto function.
+                        gotos.Add(key, existingGoto.Index);
                     }
                 }
             }

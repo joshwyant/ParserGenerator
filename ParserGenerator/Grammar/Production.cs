@@ -1,9 +1,6 @@
 ﻿using ParserGenerator.Utility;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -12,67 +9,67 @@ namespace ParserGenerator
         public class Production
         {
             public Nonterminal_T Lhs { get; }
-            public IReadOnlyList<ProductionRule> Rules { get; }
-            List<ProductionRule> list;
+            public List<ProductionRule> Rules { get; }
+            private readonly List<ProductionRule> _list;
 
             internal Production(Nonterminal_T lhs)
             {
                 Lhs = lhs;
-                Rules = list = new List<ProductionRule>();
+                Rules = _list = new List<ProductionRule>();
             }
 
             public static ProductionRule operator%(Production p, Symbol s)
             {
                 var r = new ProductionRule(p, s == null ? new Symbol[0] : new[] { s });
-                p.list.Add(r);
+                p._list.Add(r);
                 return r;
             }
 
             public Production Or(params Symbol[] symbols)
             {
-                if (list.Count == 0)
+                if (_list.Count == 0)
                     throw new InvalidOperationException();
 
-                list.Add(new ProductionRule(this, symbols));
+                _list.Add(new ProductionRule(this, symbols));
                 return this;
             }
 
             public Production As(params Symbol[] symbols)
             {
-                if (list.Count != 0)
+                if (_list.Count != 0)
                     throw new InvalidOperationException();
 
-                list.Add(new ProductionRule(this, symbols));
+                _list.Add(new ProductionRule(this, symbols));
                 return this;
             }
 
             public Production AsAny(params Symbol[] symbols)
             {
-                if (list.Count != 0)
+                if (_list.Count != 0)
                     throw new InvalidOperationException();
 
                 foreach (var symbol in symbols)
                 {
-                    list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
+                    _list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
                 }
                 return this;
             }
 
             public Production OrAny(params Symbol[] symbols)
             {
-                if (list.Count == 0)
+                if (_list.Count == 0)
                     throw new InvalidOperationException();
 
                 foreach (var symbol in symbols)
                 {
-                    list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
+                    _list.Add(new ProductionRule(this, symbol.AsSingletonEnumerable()));
                 }
                 return this;
             }
 
             public Production Optional()
             {
-                list.Add(new ProductionRule(this, new Symbol[0]));
+                _list.Add(new ProductionRule(this, new Symbol[0]));
                 return this;
             }
 
@@ -83,7 +80,7 @@ namespace ParserGenerator
 
             public override bool Equals(object obj)
             {
-                return object.ReferenceEquals(obj, this);
+                return ReferenceEquals(obj, this);
             }
 
             public override string ToString()

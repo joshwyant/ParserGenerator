@@ -1,87 +1,51 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator.Utility
 {
     /*
         The whole idea here is to allow the reader to peek. 
         TextReader.Peek doesn't work if it's a StreamReader and the underlying stream can't seek.
-        */
+    */
     public class CharacterReader : IPeekable<char>
     {
-        TextReader reader;
-        IPeekable<char> peekable;
+        private readonly TextReader _reader;
+        private readonly IPeekable<char> _peekable;
 
         public CharacterReader(TextReader original)
         {
-            this.reader = original;
-            this.peekable = this.AsPeekable();
+            _reader = original;
+            _peekable = this.AsPeekable();
         }
 
-        public bool HasNext()
-        {
-            return peekable.HasNext();
-        }
+        public bool HasNext() => _peekable.HasNext();
 
-        public char Peek()
-        {
-            return peekable.Peek();
-        }
+        public char Peek() => _peekable.Peek();
 
-        public char Read()
-        {
-            return peekable.Read();
-        }
+        public char Read() => _peekable.Read();
 
-        public IEnumerator<char> GetEnumerator()
-        {
-            return new Enumerator(reader);
-        }
+        public IEnumerator<char> GetEnumerator() => new Enumerator(_reader);
 
-        IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private class Enumerator : IEnumerator<char>
         {
-            return GetEnumerator();
-        }
-        
-        public class Enumerator : IEnumerator<char>
-        {
-            public TextReader reader;
+            private readonly TextReader _reader;
             public Enumerator(TextReader original)
             {
-                reader = original;
+                _reader = original;
             }
 
-            char current;
-            public char Current
-            {
-                get
-                {
-                    return current;
-                }
-            }
+            public char Current { get; private set; }
+            object IEnumerator.Current => Current;
 
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return current;
-                }
-            }
-
-            public void Dispose()
-            {
-                reader.Dispose();
-            }
+            public void Dispose() => _reader.Dispose();
 
             public bool MoveNext()
             {
-                var read = reader.Read();
-                current = (char)read;
+                var read = _reader.Read();
+                Current = (char)read;
                 return read != -1;
             }
 

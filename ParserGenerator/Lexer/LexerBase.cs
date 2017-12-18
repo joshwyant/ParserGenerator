@@ -1,11 +1,7 @@
 ﻿using ParserGenerator.Utility;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -14,12 +10,12 @@ namespace ParserGenerator
         public abstract class LexerBase : IPeekable<Token>
         {
             protected IPeekable<char> Reader { get; }
-            IPeekable<Token> peekable;
+            private readonly IPeekable<Token> _peekable;
 
             public LexerBase(TextReader reader)
             {
-                this.Reader = new CharacterReader(reader);
-                this.peekable = Lex().AsPeekable();
+                Reader = new CharacterReader(reader);
+                _peekable = Lex().AsPeekable();
             }
 
             protected abstract IEnumerable<Token> Lex();
@@ -27,27 +23,27 @@ namespace ParserGenerator
             #region IPeekable<Token>
             public Token Read()
             {
-                return peekable.Read();
+                return _peekable.Read();
             }
 
             public Token Peek()
             {
-                return peekable.Peek();
+                return _peekable.Peek();
             }
 
             public bool HasNext()
             {
-                return peekable.HasNext();
+                return _peekable.HasNext();
             }
 
             public IEnumerator<Token> GetEnumerator()
             {
-                return peekable.GetEnumerator();
+                return _peekable.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return peekable.GetEnumerator();
+                return _peekable.GetEnumerator();
             }
             #endregion
         }

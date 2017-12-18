@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserGenerator
 {
@@ -25,8 +23,7 @@ namespace ParserGenerator
             Start = start;
 
             var initProduction = DefineProduction(Init);
-            var initRules = initProduction.Rules as List<ProductionRule>;
-            initRules.Add(new ProductionRule(initProduction, new Symbol(Start).AsSingletonEnumerable()));
+            initProduction.Rules.Add(new ProductionRule(initProduction, new Symbol(Start).AsSingletonEnumerable()));
         }
 
         #region Public Properties
@@ -35,20 +32,20 @@ namespace ParserGenerator
         {
             get
             {
-                if (indexedProductions == null)
+                if (_indexedProductions == null)
                     FlattenProductions();
 
-                return indexedProductions;
+                return _indexedProductions;
             }
         }
         #endregion
 
         #region Private Fields
-        private Dictionary<Symbol, HashSet<Terminal_T>> first;
-        private Dictionary<Symbol, HashSet<Terminal_T>> follow;
-        private Dictionary<Symbol, bool> nullable;
-        private Symbol[] symbols;
-        private List<ProductionRule> indexedProductions;
+        private Dictionary<Symbol, HashSet<Terminal_T>> _first;
+        private Dictionary<Symbol, HashSet<Terminal_T>> _follow;
+        private Dictionary<Symbol, bool> _nullable;
+        private Symbol[] _symbols;
+        private List<ProductionRule> _indexedProductions;
         #endregion
 
         #region Protected Properties
@@ -56,57 +53,45 @@ namespace ParserGenerator
         {
             get
             {
-                if (first == null)
+                if (_first == null)
                     ComputeFirstAndFollows();
 
-                return first;
+                return _first;
             }
-            private set
-            {
-                first = value;
-            }
+            private set => _first = value;
         }
         protected Dictionary<Symbol, HashSet<Terminal_T>> Follow
         {
             get
             {
-                if (follow == null)
+                if (_follow == null)
                     ComputeFirstAndFollows();
 
-                return follow;
+                return _follow;
             }
-            private set
-            {
-                follow = value;
-            }
+            private set => _follow = value;
         }
         protected Dictionary<Symbol, bool> Nullable
         {
             get
             {
-                if (nullable == null)
+                if (_nullable == null)
                     ComputeFirstAndFollows();
 
-                return nullable;
+                return _nullable;
             }
-            private set
-            {
-                nullable = value;
-            }
+            private set => _nullable = value;
         }
         protected Symbol[] Symbols
         {
             get
             {
-                if (symbols == null)
+                if (_symbols == null)
                     ComputeFirstAndFollows();
 
-                return symbols;
+                return _symbols;
             }
-            private set
-            {
-                symbols = value;
-            }
+            private set => _symbols = value;
         }
         #endregion
 
@@ -123,22 +108,10 @@ namespace ParserGenerator
 
             return p;
         }
-        public AstNode Parse(string s)
-        {
-            return Parse(new StringReader(s));
-        }
-        public AstNode Parse(Stream s)
-        {
-            return Parse(new StreamReader(s));
-        }
-        public AstNode Parse(StringReader s)
-        {
-            return GetParser(s).Parse();
-        }
-        public AstNode Parse(StreamReader s)
-        {
-            return GetParser(s).Parse();
-        }
+        public ParseTreeNode Parse(string s) => Parse(new StringReader(s));
+        public ParseTreeNode Parse(Stream s) => Parse(new StreamReader(s));
+        public ParseTreeNode Parse(StringReader s) => GetParser(s).Parse();
+        public ParseTreeNode Parse(StreamReader s) => GetParser(s).Parse();
         #endregion
 
         #region Abstract Methods
@@ -156,7 +129,7 @@ namespace ParserGenerator
         /// the given string of symbols.</returns>
         protected internal IEnumerable<Terminal_T> FirstOf(IEnumerable<Symbol> symbols)
         {
-            bool prevWasNullable = true;
+            var prevWasNullable = true;
 
             return symbols.TakeWhile(s =>
             {
@@ -176,20 +149,20 @@ namespace ParserGenerator
         /// </summary>
         protected internal void FlattenProductions()
         {
-            if (indexedProductions != null)
+            if (_indexedProductions != null)
                 return;
 
-            indexedProductions = new List<ProductionRule>();
+            _indexedProductions = new List<ProductionRule>();
 
             foreach (var production in Productions.Values)
             {
-                var index = indexedProductions.Count;
+                var index = _indexedProductions.Count;
 
-                indexedProductions.AddRange(production.Rules);
+                _indexedProductions.AddRange(production.Rules);
 
-                for (var i = index; i < indexedProductions.Count; i++)
+                for (var i = index; i < _indexedProductions.Count; i++)
                 {
-                    indexedProductions[i].Index = i;
+                    _indexedProductions[i].Index = i;
                 }
             }
         }
@@ -279,11 +252,10 @@ namespace ParserGenerator
                             // then Follow[Y[i]] += First[Y[j]]
                             for (var j = i + 1; j < Yik.Count; j++)
                             {
-                                if (i + 1 == j || Yik.Skip(i + 1).Take(j - i - 1).All(sym => Nullable[sym]))
-                                {
-                                    if (Follow[Yi].TryUnionWith(First[Yik[j]]))
-                                        changed = true;
-                                }
+                                if (i + 1 != j && !Yik.Skip(i + 1).Take(j - i - 1).All(sym => Nullable[sym])) continue;
+                                
+                                if (Follow[Yi].TryUnionWith(First[Yik[j]]))
+                                    changed = true;
                             }
                         }
                     }
