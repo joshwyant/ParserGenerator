@@ -15,11 +15,16 @@ namespace ParserGenerator
             public LRItemSet() { }
 
             public int Index { get; set; } = -1;
+            
+            public bool IsClosed { get; set; }
+            
+            public HashSet<Nonterminal_T> ClosureProductions { get; set; }
 
             public IEnumerable<LRItem> Kernels { get { return this.Where(i => i.IsKernel); } }
 
             public void RemoveNonkernels()
             {
+                IsClosed = false;
                 // HashSet<> methods:
                 RemoveWhere(i => !i.IsKernel); // Remove items with the marker on the left (except start symbol)
                 TrimExcess(); // The whole point of removing the nonkernels is to save memory.

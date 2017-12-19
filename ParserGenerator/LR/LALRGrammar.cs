@@ -64,30 +64,15 @@ namespace ParserGenerator
 
         protected LRItemSet LR1Goto(LRItemSet items, Symbol s)
         {
-            // Start with an empty set.
-            var newset = new LRItemSet();
-
-            // For each given item
-            foreach (var item in items)
-            {
-                // If for this item we can advance the marker over the given grammar symbol,
-                //   then we can go ahead and add this new item to the set.
-                if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(s))
-                    newset.Add(new LRItem(item.Rule, item.Marker + 1));
-            }
-
-            // "Goto" is going to be the closure of this new set.
-            return LR1Closure(newset);
+            return LR1Closure(
+                new LRItemSet(
+                    items.Where(item => item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(s))
+                         .Select(item => new LRItem(item.Rule, item.Marker + 1))));
         }
 
         protected override LRItemSetCollection ComputeItemSetCollection()
         {
-            var collection = ComputeLR0ItemSetCollection();
-
-            // Must do this before removing the nonkernels.
-            var gotoSymbol = ComputeLR0GotoLookup(collection);
-
-            collection.RemoveNonkernels();
+            var (collection, gotoSymbol) = ComputeLR0ItemSetKernelsCollectionAndGotoLookup();
 
             // Determine propagation of lookaheads, and initialze lookaheads based on spontaneous generation
             // (page 270-275, dragon book 2nd ed.)

@@ -49,6 +49,9 @@ namespace ParserGenerator
         /// <returns>The completed LR0 closure.</returns>
         protected internal LRItemSet LR0Closure(LRItemSet items)
         {
+            if (items.IsClosed)
+                return items;
+            
             // Initialize the return set to the item set
             var newset = new LRItemSet(items);
 
@@ -84,6 +87,62 @@ namespace ParserGenerator
 
             return newset;
         }
+        
+        /// <summary>
+        /// Time- and space-optimized closure which stores the list of nonterminals added to a closure.
+        /// </summary>
+        /// <param name="kernels">The kernels of an item set.</param>
+        LRItemSet LR0ComputeClosureNonterminals(LRItemSet itemSet)
+        {
+            if (itemSet.ClosureProductions != null)
+                return itemSet;
+            
+            // Initialize the set with the next symbol at each marker.
+            var nonterminalSet = new HashSet<Nonterminal_T>(itemSet.MarkedSymbols().Nonterminals());
+            
+            // Create a queue to traverse the nonterminals in the rules.
+            var queue = new Queue<Nonterminal_T>(nonterminalSet);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+
+                // Get the first nonterminal from rules starting with them.
+                foreach (var nonterminal in Productions[current].FirstSymbols().Nonterminals())
+                {
+                    if (nonterminalSet.Contains(nonterminal)) continue;
+                    
+                    // We haven't seen this production yet. Let's add it to the closure.
+                    queue.Enqueue(nonterminal);
+                    nonterminalSet.Add(nonterminal);
+                }
+            }
+
+            itemSet.ClosureProductions = nonterminalSet;
+
+            return itemSet;
+        }
+
+        /// <summary>
+        /// Time- and space-optimized goto which returns the kernels of a goto.
+        /// </summary>
+        Dictionary<Symbol, LRItemSet> LR0GotoKernels(LRItemSet itemSet)
+        {
+            if (itemSet.ClosureProductions == null)
+                throw new InvalidOperationException();
+            
+            return itemSet.Kernels
+                .Where(k => k.Marker < k.Length)
+                .Select(k => (symbol: k.Rule.Symbols[k.Marker], item: new LRItem(k.Rule, k.Marker + 1)))
+                .Concat(itemSet
+                    .ClosureProductions
+                    .SelectMany(n => Productions[n].Rules)
+                    .Where(r => r.Length > 0)
+                    .Select(r => (symbol: r.Symbols[0], item: new LRItem(r, 1))))
+                .GroupBy(t => t.symbol, t => t.item)
+                .ToDictionary(g => g.Key, g => new LRItemSet(g));
+        }
+        
         /// <summary>
         /// Gives item sets for the given state, which are the additional states with the marker advanced
         /// past the given symbol. Represents the LR0 GOTO set for the given state and symbol, which is a new state
@@ -155,6 +214,50 @@ namespace ParserGenerator
                 states[i].Index = i;
 
             return states;
+        }
+        
+        protected (LRItemSetCollection states, Dictionary<(int state, Symbol symbol), int> gotos)
+        ComputeLR0ItemSetKernelsCollectionAndGotoLookup()
+        {
+            var states = new LRItemSetCollection();
+            var stateLookup = new Dictionary<LRItemSet, LRItemSet>();
+            var gotos = new Dictionary<(int, Symbol), int>();
+            var workQueue = new Queue<LRItemSet>();
+
+            // Start by adding the start symbol to the item set collection (a kernel item!)
+            var startItem = new LRItemSet(new[] {
+                new LRItem(Productions[Init].Rules.Single(), 0, isKernel: true)
+            });
+            LR0ComputeClosureNonterminals(startItem);
+            states.StartState = startItem;
+            Productions[Init].Rules.Single().IsAccepting = true;
+            startItem.Index = states.Count;
+            states.Add(startItem);
+            stateLookup.Add(startItem, startItem);
+            workQueue.Enqueue(startItem);
+
+            while (workQueue.Count > 0)
+            {
+                var itemSet = workQueue.Dequeue();
+
+                var gotoLookup = LR0GotoKernels(itemSet);
+
+                foreach (var symbol in gotoLookup.Keys)
+                {
+                    if (!stateLookup.TryGetValue(gotoLookup[symbol], out var gotoState))
+                    {
+                        gotoState = gotoLookup[symbol];
+                        LR0ComputeClosureNonterminals(gotoState);
+                        gotoState.Index = states.Count;
+                        states.Add(gotoState);
+                        stateLookup.Add(gotoState, gotoState);
+                        workQueue.Enqueue(gotoState);
+                    }
+                    gotos.Add((itemSet.Index, symbol), gotoState.Index);
+                }
+            }
+            
+            return (states, gotos);
         }
         
         /// <summary>
