@@ -23,9 +23,9 @@ namespace ParserGenerator
                 .ToArray();
         }
 
-        public Tuple<LRItem, Symbol>[] ShiftReduceConflicts()
+        public (LRItem item, Symbol symbol)[] ShiftReduceConflicts()
         {
-            var toReturn = new List<Tuple<LRItem, Symbol>>();
+            var toReturn = new List<(LRItem, Symbol)>();
             foreach (var s in States)
             {
                 foreach (var i in s)
@@ -35,10 +35,10 @@ namespace ParserGenerator
                     {
                         foreach (var sym in Follow[i.Rule.Production.Lhs])
                         {
-                            var transitionKey = new Tuple<int, Symbol>(s.Index, sym);
+                            var transitionKey = (state: s.Index, symbol: sym);
                             if (GotoSymbol.ContainsKey(transitionKey))
                             {
-                                toReturn.Add(new Tuple<LRItem, Symbol>(i, sym));
+                                toReturn.Add((i, sym));
                             }
                         }
                     }
@@ -67,14 +67,14 @@ namespace ParserGenerator
                 {
                     if (sym.IsTerminal)
                     {
-                        var key = new Tuple<int, Terminal_T>(state.Index, sym.Terminal);
+                        var key = (state.Index, sym.Terminal);
 
                         foreach (var item in state)
                         {
                             // Preferring shift over reduce here (though undefined for SLR)
                             if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(sym))
                             {
-                                if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
+                                if (GotoSymbol.TryGetValue((state.Index, sym), out var @goto))
                                 {
                                     table.Action[key] = new Action(Shift, @goto);
                                 }
@@ -84,7 +84,7 @@ namespace ParserGenerator
                                 if (item.Rule.IsAccepting)
                                 {
                                     if (sym.Terminal.CompareTo(Eof) == 0)
-                                        table.Action[key] = new Action(ActionType.Accept);
+                                        table.Action[key] = new Action(Accept);
                                 }
                                 else if (Follow[item.Rule.Production.Lhs].Contains(sym.Terminal))
                                     table.Action[key] = new Action(Reduce, item.Rule.Index);
@@ -95,9 +95,9 @@ namespace ParserGenerator
                     }
                     else // Nonterminal
                     {
-                        if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
+                        if (GotoSymbol.TryGetValue((state.Index, sym), out var @goto))
                         {
-                            table.Goto[new Tuple<int, Nonterminal_T>(state.Index, sym.Nonterminal)] = @goto;
+                            table.Goto[(state.Index, sym.Nonterminal)] = @goto;
                         }
                     }
                 }
@@ -106,7 +106,7 @@ namespace ParserGenerator
             return table;
         }
 
-        protected override Dictionary<Tuple<int, Symbol>, int> ComputeGotoLookup()
+        protected override Dictionary<(int state, Symbol symbol), int> ComputeGotoLookup()
         {
             return ComputeLR0GotoLookup(States);
         }

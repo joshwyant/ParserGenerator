@@ -92,7 +92,7 @@ namespace ParserGenerator
             // Determine propagation of lookaheads, and initialze lookaheads based on spontaneous generation
             // (page 270-275, dragon book 2nd ed.)
             collection.StartState.Single().Lookaheads.Add(Eof);
-            var rulePropagations = new Dictionary<Tuple<int, LRItem>, HashSet<Tuple<int, LRItem>>>();
+            var rulePropagations = new Dictionary<(int state, LRItem item), HashSet<(int state, LRItem item)>>();
 
             // For all states
             foreach (var itemset in collection)
@@ -100,7 +100,7 @@ namespace ParserGenerator
                 // For every kernel item
                 foreach (var kernelitem in itemset)
                 {
-                    var itemKey = new Tuple<int, LRItem>(itemset.Index, kernelitem);
+                    var itemKey = (state: itemset.Index, item: kernelitem);
                     
                     // Create an item set with a dummy lookahead.
                     // This dummy item set is based on the current state (current item set).
@@ -113,7 +113,7 @@ namespace ParserGenerator
                     foreach (var sym in Symbols)
                     {
                         // What is the goto key for this state and transition symbol?
-                        var gotoKey = new Tuple<int, Symbol>(itemset.Index, sym);
+                        var gotoKey = (itemset.Index, sym);
                         
                         // Is there a goto transition for this state and transition symbol?
                         if (!gotoSymbol.TryGetValue(gotoKey, out var gotoidx)) continue;
@@ -131,9 +131,9 @@ namespace ParserGenerator
                             if (b.Lookaheads.Any(l => l.CompareTo(Unknown) == 0))
                             {
                                 if (!rulePropagations.ContainsKey(itemKey))
-                                    rulePropagations[itemKey] = new HashSet<Tuple<int, LRItem>>();
+                                    rulePropagations[itemKey] = new HashSet<(int, LRItem)>();
 
-                                rulePropagations[itemKey].Add(new Tuple<int, LRItem>(gotoState.Index, gotoItem));
+                                rulePropagations[itemKey].Add((gotoState.Index, gotoItem));
                             }
                                     
                             gotoItem.Lookaheads.UnionWith(
@@ -153,12 +153,12 @@ namespace ParserGenerator
                 {
                     foreach (var item in state)
                     {
-                        var itemKey = new Tuple<int, LRItem>(state.Index, item);
+                        var itemKey = (state.Index, item);
 
                         if (!rulePropagations.TryGetValue(itemKey, out var propagated)) continue;
                         foreach (var key in propagated)
                         {
-                            if (key.Item2.Lookaheads.TryUnionWith(item.Lookaheads))
+                            if (key.item.Lookaheads.TryUnionWith(item.Lookaheads))
                                 changed = true;
                         }
                     }
@@ -185,13 +185,13 @@ namespace ParserGenerator
                 {
                     if (sym.IsTerminal)
                     {
-                        var key = new Tuple<int, Terminal_T>(state.Index, sym.Terminal);
+                        var key = (state.Index, sym.Terminal);
 
                         foreach (var item in state)
                         {
                             if (item.Marker < item.Length && item.Rule.Symbols[item.Marker].Equals(sym))
                             {
-                                if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
+                                if (GotoSymbol.TryGetValue((state.Index, sym), out var @goto))
                                 {
                                     table.Action[key] = new Action(Shift, @goto);
                                 }
@@ -225,9 +225,9 @@ namespace ParserGenerator
                     }
                     else // Nonterminal
                     {
-                        if (GotoSymbol.TryGetValue(new Tuple<int, Symbol>(state.Index, sym), out var @goto))
+                        if (GotoSymbol.TryGetValue((state.Index, sym), out var @goto))
                         {
-                            table.Goto[new Tuple<int, Nonterminal_T>(state.Index, sym.Nonterminal)] = @goto;
+                            table.Goto[(state.Index, sym.Nonterminal)] = @goto;
                         }
                     }
                 }
@@ -236,9 +236,9 @@ namespace ParserGenerator
             return table;
         }
 
-        protected override Dictionary<Tuple<int, Symbol>, int> ComputeGotoLookup()
+        protected override Dictionary<(int state, Symbol symbol), int> ComputeGotoLookup()
         {
-            var gotos = new Dictionary<Tuple<int, Symbol>, int>();
+            var gotos = new Dictionary<(int, Symbol), int>();
 
             var stateLookup = States.ToDictionary(s => s, s => s);
 
@@ -252,7 +252,7 @@ namespace ParserGenerator
 
                     // If there are any gotos...
                     if (!@goto.Any()) continue;
-                    var key = new Tuple<int, Symbol>(itemset.Index, sym);
+                    var key = (itemset.Index, sym);
 
                     if (gotos.ContainsKey(key)) continue;
                     // Match the dynamic goto with an actual state in our collection.

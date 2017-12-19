@@ -29,7 +29,7 @@ namespace ParserGenerator.Demo
             var hasConflicts = false;
 
             var slr = grammar as SLRGrammar<Terminal, Nonterminal>;
-            Tuple<SLRGrammar<Terminal, Nonterminal>.LRItem, SLRGrammar<Terminal, Nonterminal>.Symbol>[] srConflicts = null;
+            (SLRGrammar<Terminal, Nonterminal>.LRItem, SLRGrammar<Terminal, Nonterminal>.Symbol)[] srConflicts = null;
             SLRGrammar<Terminal, Nonterminal>.LRItemSet[] rrConflicts = null;
 
             if (slr != null)

@@ -9,7 +9,7 @@ namespace ParserGenerator
     {
         public class LRParser : Parser
         {
-            private Stack<Tuple<ParseTreeNode, int>> Stack { get; } = new Stack<Tuple<ParseTreeNode, int>>();
+            private Stack<(ParseTreeNode node, int state)> Stack { get; } = new Stack<(ParseTreeNode node, int state)>();
 
             public LRParser(LRkGrammar<Terminal_T, Nonterminal_T> g, LexerBase l)
                 : base(g, l) { }
@@ -27,7 +27,7 @@ namespace ParserGenerator
                 var currentState = table.StartState;
 
                 // Push the start state onto the stack
-                Stack.Push(new Tuple<ParseTreeNode, int>(new ParseTreeNode(Grammar.Start), currentState));
+                Stack.Push((new ParseTreeNode(Grammar.Start), currentState));
 
                 foreach (var t in Lexer)
                 {
@@ -36,7 +36,7 @@ namespace ParserGenerator
                     do {
                         reduced = false;
 
-                        table.Action.TryGetValue(new Tuple<int, Terminal_T>(currentState, t.Terminal), out var action);
+                        table.Action.TryGetValue((currentState, t.Terminal), out var action);
                     
                         // Get the action type. If action is null, default to the 'Error' action
                         switch (action?.Type ?? Error)
@@ -44,7 +44,7 @@ namespace ParserGenerator
                             case Shift:
                                 // Shift N
                                 currentState = action.Number;
-                                Stack.Push(new Tuple<ParseTreeNode, int>(new ParseTreeNode(t), currentState));
+                                Stack.Push((new ParseTreeNode(t), currentState));
                                 break;
                             case Reduce:
                                 // Reduce by rule N
@@ -56,20 +56,20 @@ namespace ParserGenerator
     
                                 // Pop the thing off the stack
                                 for (var i = rule.Length - 1; i >= 0; i--)
-                                    symbols[i] = Stack.Pop().Item1;
+                                    symbols[i] = Stack.Pop().node;
     
                                 // Create a new Ast node
                                 var reducedNode = new ParseTreeNode(reduceLhs, symbols);
                             
                                 // Get the state at the top of the stack
-                                var topState = Stack.Peek().Item2;
+                                var topState = Stack.Peek().state;
     
                                 // Get the next transition key based on the item we're reducing by
                                 // It should exist in the goto table, we should never try to reduce when it doesn't make sense.
-                                var newState = table.Goto[new Tuple<int, Nonterminal_T>(topState, reduceLhs)];
+                                var newState = table.Goto[(topState, reduceLhs)];
     
                                 // Push that onto the stack
-                                Stack.Push(new Tuple<ParseTreeNode, int>(reducedNode, newState));
+                                Stack.Push((reducedNode, newState));
     
                                 // Transition to the top state
                                 currentState = newState;
@@ -78,7 +78,7 @@ namespace ParserGenerator
                                 reduced = true;
                                 break;
                             case Accept:
-                                return Stack.Pop().Item1;
+                                return Stack.Pop().node;
                             case Error:
                                 var tokenStr = string.IsNullOrEmpty(t.Lexeme) ? t.Terminal.ToString() : t.Lexeme;
     
@@ -86,7 +86,7 @@ namespace ParserGenerator
     
                                 if (t.Terminal.CompareTo(Grammar.Eof) == 0)
                                     // Just return whatever's on the stack
-                                    return new ParseTreeNode(Grammar.Unknown, Stack.Skip(1).Select(s => s.Item1).ToArray());
+                                    return new ParseTreeNode(Grammar.Unknown, Stack.Skip(1).Select(s => s.node).ToArray());
     
                                 break;
                         }

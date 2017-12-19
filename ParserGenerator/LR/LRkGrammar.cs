@@ -20,7 +20,7 @@ namespace ParserGenerator
         #region Public Properties
         public LRItemSetCollection States => _states ?? (_states = ComputeItemSetCollection());
 
-        public Dictionary<Tuple<int, Symbol>, int> GotoSymbol => _gotoSymbol ?? (_gotoSymbol = ComputeGotoLookup());
+        public Dictionary<(int state, Symbol symbol), int> GotoSymbol => _gotoSymbol ?? (_gotoSymbol = ComputeGotoLookup());
 
         public ParsingTable ParseTable
         {
@@ -36,7 +36,7 @@ namespace ParserGenerator
         #region Private Fields
         private LRItemSetCollection _states;
         private ParsingTable _parseTable;
-        private Dictionary<Tuple<int, Symbol>, int> _gotoSymbol;
+        private Dictionary<(int state, Symbol symbol), int> _gotoSymbol;
         #endregion
         
         #region Protected Internal Methods
@@ -162,9 +162,9 @@ namespace ParserGenerator
         /// </summary>
         /// <param name="collection">The precomputed list of all the item sets.</param>
         /// <returns>A collection that returns a new state given a current state and a transition symbol.</returns>
-        protected internal Dictionary<Tuple<int, Symbol>, int> ComputeLR0GotoLookup(LRItemSetCollection collection)
+        protected internal Dictionary<(int state, Symbol symbol), int> ComputeLR0GotoLookup(LRItemSetCollection collection)
         {
-            var gotos = new Dictionary<Tuple<int, Symbol>, int>();
+            var gotos = new Dictionary<(int, Symbol), int>();
 
             var stateLookup = collection.ToDictionary(s => s, s => s);
 
@@ -177,7 +177,7 @@ namespace ParserGenerator
                     var @goto = LR0Goto(itemset, sym);
                     if (!@goto.Any()) continue;
                     
-                    var key = new Tuple<int, Symbol>(itemset.Index, sym);
+                    var key = (itemset.Index, sym);
                     if (gotos.ContainsKey(key)) continue;
                     
                     // Match the dynamic goto with an actual state in our collection.
@@ -203,7 +203,7 @@ namespace ParserGenerator
         #region Abstract Methods
         protected abstract LRItemSetCollection ComputeItemSetCollection();
         protected abstract ParsingTable ComputeParseTable();
-        protected abstract Dictionary<Tuple<int, Symbol>, int> ComputeGotoLookup();
+        protected abstract Dictionary<(int state, Symbol symbol), int> ComputeGotoLookup();
         #endregion
     }
 }
