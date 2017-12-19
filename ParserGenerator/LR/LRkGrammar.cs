@@ -124,7 +124,9 @@ namespace ParserGenerator
         }
 
         /// <summary>
-        /// Time- and space-optimized goto which returns the kernels of a goto.
+        /// Time- and space-optimized goto which returns gotos for all relevant symbols, storing kernels only.
+        /// For this function, the input state must have its closure production heads computed 
+        /// (with LR0ComputeClosureNonterminals). The output states do not have closure productions
         /// </summary>
         Dictionary<Symbol, LRItemSet> LR0GotoKernels(LRItemSet itemSet)
         {
@@ -132,13 +134,26 @@ namespace ParserGenerator
                 throw new InvalidOperationException();
             
             return itemSet.Kernels
+                // Create new items by advancing the marker for the input kernels
                 .Where(k => k.Marker < k.Length)
                 .Select(k => (symbol: k.Rule.Symbols[k.Marker], item: new LRItem(k.Rule, k.Marker + 1)))
+                // Create new items from the nonkernels (using closure production heads)
+                // Since we are computing goto for ALL symbols, we advance the marker for all nonkernels.
+                // The first item in the rule is the goto symbol, and the marker is advanced past the first item.
+                // So a new goto kernel for symbol X, production P would be:
+                // P -> X . yz...
+                // Then, they are grouped by symbol. So one state (item set) for the nonkernels of the input would be:
+                // P -> X . yz...
+                // Q -> X . vw...
+                // ...
+                // The dictionary will contain item sets for all possible goto symbols X, Y, and Z 
+                // for the given input state.
                 .Concat(itemSet
                     .ClosureProductions
                     .SelectMany(n => Productions[n].Rules)
                     .Where(r => r.Length > 0)
                     .Select(r => (symbol: r.Symbols[0], item: new LRItem(r, 1))))
+                // Group by symbol to create an item set per symbol.
                 .GroupBy(t => t.symbol, t => t.item)
                 .ToDictionary(g => g.Key, g => new LRItemSet(g));
         }
@@ -236,6 +251,7 @@ namespace ParserGenerator
             stateLookup.Add(startItem, startItem);
             workQueue.Enqueue(startItem);
 
+            // Discover goto item sets for items in the work queue. Each item set is visited only once.
             while (workQueue.Count > 0)
             {
                 var itemSet = workQueue.Dequeue();
