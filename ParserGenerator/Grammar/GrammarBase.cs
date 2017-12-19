@@ -152,19 +152,10 @@ namespace ParserGenerator
             if (_indexedProductions != null)
                 return;
 
-            _indexedProductions = new List<ProductionRule>();
+            _indexedProductions = Productions.Values.SelectMany(p => p.Rules).ToList();
 
-            foreach (var production in Productions.Values)
-            {
-                var index = _indexedProductions.Count;
-
-                _indexedProductions.AddRange(production.Rules);
-
-                for (var i = index; i < _indexedProductions.Count; i++)
-                {
-                    _indexedProductions[i].Index = i;
-                }
-            }
+            var i = 0;
+            _indexedProductions.ForEach(r => r.Index = i++);
         }
         #endregion
         
