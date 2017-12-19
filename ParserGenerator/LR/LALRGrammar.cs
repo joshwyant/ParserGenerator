@@ -22,10 +22,13 @@ namespace ParserGenerator
         /// </summary>
         /// <param name="items">The list of items from which to complete the closure.</param>
         /// <returns>The LR(1) closure.</returns>
+        // This is documented on page 261 of Compilers 2nd Ed. The difference is that each item
+        // can have a set of lookaheads rather than duplicate items with single differing lookaheads.
         protected LRItemSet LR1Closure(LRItemSet items)
         {
             // Initialize the return set to the item set
             var newset = new LRItemSet(items);
+            newset.IsClosed = true;
 
             // Keep looping until no more items were added in this iteration
             bool changed;

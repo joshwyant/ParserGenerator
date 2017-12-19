@@ -54,6 +54,7 @@ namespace ParserGenerator
             
             // Initialize the return set to the item set
             var newset = new LRItemSet(items);
+            newset.IsClosed = true;
 
             // Keep looping until no more items were added in this iteration
             bool changed;

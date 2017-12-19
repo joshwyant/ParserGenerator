@@ -84,7 +84,17 @@ namespace ParserGenerator
 
                 return added;
             }
-        
+
+            public string ToString(LRkGrammar<Terminal_T, Nonterminal_T> grammar)
+            {
+                if (IsClosed || ClosureProductions == null)
+                {
+                    return string.Join("\r\n", this);
+                }
+
+                return string.Join("\r\n", this.Concat(ClosureProductions.SelectMany(p => grammar.Productions[p].Rules)
+                    .Select(r => new LRItem(r, 0))));
+            }
         }
     }
 }
