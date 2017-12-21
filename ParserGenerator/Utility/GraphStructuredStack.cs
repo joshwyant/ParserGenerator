@@ -149,6 +149,31 @@ namespace ParserGenerator
                 return Push(values as IEnumerable<(TValue value, TLinkValue semanticValue)>);
             }
 
+            public TLinkValue DeterministicPop()
+            {
+                if (DeterministicDepth < 1)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                var link = _top.Links.SingleOrDefault();
+                _top = link.Parent;
+                return link.SemanticValue;
+            }
+            
+            public IEnumerable<TLinkValue> DeterministicPopN(int n)
+            {
+                if (n > DeterministicDepth)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                while (n-- > 0)
+                {
+                    yield return DeterministicPop();   
+                }
+            }
+
             public TValue Peek()
             {
                 return _top.Value;
