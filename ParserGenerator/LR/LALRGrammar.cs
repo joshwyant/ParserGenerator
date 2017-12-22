@@ -85,6 +85,8 @@ namespace ParserGenerator
             // For all states
             foreach (var itemset in collection)
             {
+                var gotosForState = gotoSymbol[itemset.Index];
+                
                 // For every kernel item
                 foreach (var kernelitem in itemset)
                 {
@@ -97,23 +99,18 @@ namespace ParserGenerator
                     var dummyItemSet = new LRItemSet(dummyItem.AsSingletonEnumerable());
                     var j = LR1Closure(dummyItemSet);
 
-                    // For every symbol
-                    foreach (var sym in Symbols)
+                    // For every symbol/state in the goto list
+                    foreach (var gotokvp in gotosForState)
                     {
-                        // What is the goto key for this state and transition symbol?
-                        var gotoKey = (itemset.Index, sym);
-                        
-                        // Is there a goto transition for this state and transition symbol?
-                        if (!gotoSymbol.TryGetValue(gotoKey, out var gotoidx)) continue;
-                        
                         // What would be the next state?
-                        var gotoState = collection[gotoidx];
+                        var gotoItemSet = collection[gotokvp.Value];
+                        var gotoItemLookup = gotoItemSet.ToDictionary(g => g, g => g);
                         
                         // Find the items in the dummy set with the marker before this symbol.
-                        foreach (var b in j.Where(bb => bb.Marker < bb.Length && bb.Rule.Symbols[bb.Marker].Equals(sym)))
+                        foreach (var b in j.Where(bb => bb.Marker < bb.Length && bb.Rule.Symbols[bb.Marker].Equals(gotokvp.Key)))
                         {
                             // Get the item corresponding to the goto state with the marker advanced over the current symbol.
-                            var gotoItem = gotoState.Single(i => i.Marker == b.Marker + 1 && ReferenceEquals(i.Rule, b.Rule));
+                            var gotoItem = gotoItemLookup[new LRItem(b.Rule, b.Marker + 1)];
 
                             // Note if lookaheads are propagated to the next item
                             if (b.Lookaheads.Any(l => l.CompareTo(Unknown) == 0))
@@ -121,7 +118,7 @@ namespace ParserGenerator
                                 if (!rulePropagations.ContainsKey(itemKey))
                                     rulePropagations[itemKey] = new HashSet<(int, LRItem)>();
 
-                                rulePropagations[itemKey].Add((gotoState.Index, gotoItem));
+                                rulePropagations[itemKey].Add((gotoItemSet.Index, gotoItem));
                             }
                                     
                             gotoItem.Lookaheads.UnionWith(
