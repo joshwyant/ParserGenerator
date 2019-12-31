@@ -23,7 +23,7 @@ namespace ParserGenerator.Tests
             public LALRGrammar()
                 : base(Terminal.Unknown, Terminal.Eof, Nonterminal.Init, Nonterminal.Start)
             {
-                _init = Productions.Values.Single(p => p.Lhs == Nonterminal.Init);
+                _init = Productions[Init];
                 _start = DefineProduction(Start);
                 _access = DefineProduction(Access);
                 _expression = DefineProduction(Expression);

@@ -232,12 +232,12 @@ namespace ParserGenerator
             return states;
         }
         
-        protected (LRItemSetCollection states, Dictionary<(int state, Symbol symbol), int> gotos)
+        protected (LRItemSetCollection states, Dictionary<int, Dictionary<Symbol, int>> gotos)
         ComputeLR0ItemSetKernelsCollectionAndGotoLookup()
         {
             var states = new LRItemSetCollection();
             var stateLookup = new Dictionary<LRItemSet, LRItemSet>();
-            var gotos = new Dictionary<(int, Symbol), int>();
+            var gotos = new Dictionary<int, Dictionary<Symbol, int>>();
             var workQueue = new Queue<LRItemSet>();
 
             // Start by adding the start symbol to the item set collection (a kernel item!)
@@ -258,6 +258,8 @@ namespace ParserGenerator
                 var itemSet = workQueue.Dequeue();
 
                 var gotoLookup = LR0GotoKernels(itemSet);
+                var gotosForState = new Dictionary<Symbol, int>();
+                gotos.Add(itemSet.Index, gotosForState);
 
                 foreach (var symbol in gotoLookup.Keys)
                 {
@@ -270,7 +272,7 @@ namespace ParserGenerator
                         stateLookup.Add(gotoState, gotoState);
                         workQueue.Enqueue(gotoState);
                     }
-                    gotos.Add((itemSet.Index, symbol), gotoState.Index);
+                    gotosForState.Add(symbol, gotoState.Index);
                 }
             }
             
